@@ -63,6 +63,15 @@ def plot_avg_s_vs_temperature(
     ax.set_ylabel("Average S")
     ax.set_title("Average nematic order parameter vs temperature")
 
+    for t, m in zip(temps, means):
+        ax.annotate(
+            f"({m:.3f}, {t:.0f}K)",
+            xy=(t, m),
+            xytext=(6, 6),
+            textcoords="offset points",
+            fontsize=8,
+        )
+
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=200)
     print(f"Wrote {out_path}")
