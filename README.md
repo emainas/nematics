@@ -30,6 +30,12 @@ Compute and save S for all four trajectories:
 nematics order
 ```
 
+## Example Outputs
+
+![P(S) distribution](reports/p_s_hist.png)
+
+![Average S vs Temperature](reports/avg_s_vs_t.png)
+
 If you want to disable progress output:
 
 ```bash
