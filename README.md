@@ -14,14 +14,20 @@ uv pip install -e .
 Run on a single frame:
 
 ```bash
-nematics-paf --gro-dir "data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro" --frame 0
+nematics paf --gro-dir "data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro" --frame 0
 ```
 
-Plot P(S) across the four trajectories:
+Plot P(S) from saved order data:
 
 ```bash
 uv pip install -e ".[viz]"
 python plotting/plot_ps.py
+```
+
+Compute and save S for all four trajectories:
+
+```bash
+nematics order
 ```
 
 If you want to disable progress output:

@@ -15,7 +15,7 @@ dev = ["pytest>=7"]
 viz = ["matplotlib>=3.8", "tqdm>=4.66"]
 
 [project.scripts]
-nematics-paf = "nematics.cli:main"
+nematics = "nematics.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nematics"]

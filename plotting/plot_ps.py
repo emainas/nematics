@@ -11,30 +11,61 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-try:
-    from tqdm import tqdm
-except Exception:  # pragma: no cover - fallback if tqdm missing
-    def tqdm(iterable, **kwargs):
-        return iterable
+def load_s_values(order_dir: Path) -> list[tuple[str, np.ndarray]]:
+    files = sorted(order_dir.glob("*.npy"))
+    if not files:
+        raise FileNotFoundError(f"No .npy files found in {order_dir}")
+    data: list[tuple[str, np.ndarray]] = []
+    for path in files:
+        data.append((path.stem, np.load(path)))
+    return data
 
-from nematics.gro import read_gro_frame
-from nematics.paf import compute_global_paf, make_molecular_axes
 
+def plot_avg_s_vs_temperature(
+    order_dir: Path,
+    out_path: Path,
+    bins: int,
+) -> None:
+    s_datasets = load_s_values(order_dir)
+    style_path = Path(__file__).with_name("prl.mplstyle")
+    if style_path.exists():
+        plt.style.use(style_path)
 
-def collect_s_values(
-    gro_dir: Path, nframes: int, natoms_per_mol: int, show_progress: bool
-) -> np.ndarray:
-    s_values = np.zeros(nframes, dtype=float)
-    iterator = range(nframes)
-    if show_progress:
-        iterator = tqdm(iterator, desc=gro_dir.name, unit="frame")
-    for i in iterator:
-        frame_path = gro_dir / f"frame{i}.gro"
-        frame = read_gro_frame(frame_path, natoms_per_mol=natoms_per_mol)
-        axes = make_molecular_axes(frame.positions)
-        evals, _ = compute_global_paf(axes.molzax)
-        s_values[i] = evals[0]
-    return s_values
+    # Map file stems to temperatures (K)
+    temp_map = {
+        "gro_S": 356.0,
+        "gro_2_S": 366.0,
+        "gro_3_S": 376.0,
+        "gro_4_S": 386.0,
+    }
+
+    temps = []
+    means = []
+    stds = []
+    for label, s_values in s_datasets:
+        if label not in temp_map:
+            continue
+        temps.append(temp_map[label])
+        means.append(float(np.mean(s_values)))
+        stds.append(float(np.std(s_values, ddof=1)))
+
+    if not temps:
+        raise ValueError("No datasets matched the temperature mapping.")
+
+    order = np.argsort(temps)
+    temps = np.array(temps)[order]
+    means = np.array(means)[order]
+    stds = np.array(stds)[order]
+
+    fig, ax = plt.subplots(figsize=(6, 4), constrained_layout=True)
+    ax.errorbar(temps, means, yerr=stds, fmt="o-", color="black", capsize=3)
+    ax.set_xlabel("Temperature (K)")
+    ax.set_ylabel("Average S")
+    ax.set_title("Average nematic order parameter vs temperature")
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, dpi=200)
+    print(f"Wrote {out_path}")
 
 
 def main() -> int:
@@ -42,66 +73,94 @@ def main() -> int:
         description="Plot P(S) from largest PAF eigenvalue across trajectories."
     )
     parser.add_argument(
-        "--data-root",
-        default="data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign",
-        help="Root directory containing gro, gro 2, gro 3, gro 4",
-    )
-    parser.add_argument(
-        "--nframes",
-        type=int,
-        default=1000,
-        help="Number of frames to read per trajectory",
-    )
-    parser.add_argument(
-        "--natoms-per-mol",
-        type=int,
-        default=38,
-        help="Atoms per molecule (default: 38 for 5CB)",
+        "--order-dir",
+        default="data/order",
+        help="Directory containing saved S .npy files",
     )
     parser.add_argument(
         "--bins",
         type=int,
-        default=40,
+        default=80,
         help="Histogram bins",
-    )
-    parser.add_argument(
-        "--no-progress",
-        action="store_true",
-        help="Disable progress display",
     )
     parser.add_argument(
         "--out",
         default="reports/p_s_hist.png",
         help="Output PNG path",
     )
+    parser.add_argument(
+        "--avg-out",
+        default="reports/avg_s_vs_t.png",
+        help="Output PNG path for average S vs temperature plot",
+    )
+    parser.add_argument(
+        "--avg-only",
+        action="store_true",
+        help="Only generate the average S vs temperature plot",
+    )
     args = parser.parse_args()
 
-    data_root = Path(args.data_root)
-    gro_dirs = [
-        data_root / "gro",
-        data_root / "gro 2",
-        data_root / "gro 3",
-        data_root / "gro 4",
-    ]
+    order_dir = Path(args.order_dir)
+    s_datasets = load_s_values(order_dir)
 
-    fig, axes = plt.subplots(2, 2, figsize=(10, 8), constrained_layout=True)
-    axes = axes.ravel()
+    style_path = Path(__file__).with_name("prl.mplstyle")
+    if style_path.exists():
+        plt.style.use(style_path)
 
-    show_progress = not args.no_progress
-    for ax, gro_dir in zip(axes, gro_dirs):
-        s_values = collect_s_values(
-            gro_dir, args.nframes, args.natoms_per_mol, show_progress
+    if args.avg_only:
+        plot_avg_s_vs_temperature(
+            order_dir=order_dir,
+            out_path=Path(args.avg_out),
+            bins=args.bins,
         )
-        ax.hist(s_values, bins=args.bins, density=True, alpha=0.8, color="#2c7fb8")
-        ax.set_title(gro_dir.name)
-        ax.set_xlabel("S (largest eigenvalue)")
-        ax.set_ylabel("P(S)")
+        return 0
+
+    fig, ax = plt.subplots(figsize=(7, 5), constrained_layout=True)
+
+    all_values = np.concatenate([vals for _, vals in s_datasets])
+    x_min = float(np.min(all_values))
+    x_max = float(np.max(all_values))
+    bins = np.linspace(x_min, x_max, args.bins + 1)
+
+    color_map = {
+        "gro_S": ("356K", "blue"),
+        "gro_2_S": ("366K", "red"),
+        "gro_3_S": ("376K", "green"),
+        "gro_4_S": ("386K", "magenta"),
+    }
+
+    max_density = 0.0
+    for label, s_values in s_datasets:
+        hist, _ = np.histogram(s_values, bins=bins, density=True)
+        max_density = max(max_density, float(np.max(hist)))
+
+        temp_label, color = color_map.get(label, (label, "black"))
+        ax.hist(
+            s_values,
+            bins=bins,
+            density=True,
+            linewidth=1.8,
+            color=color,
+            label=temp_label,
+        )
+
+    ax.set_xlabel("S (largest eigenvalue)")
+    ax.set_ylabel("P(S)")
+    ax.set_xlim(x_min, x_max)
+    ax.set_ylim(0.0, max_density * 1.05)
+    ax.legend(frameon=False)
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.suptitle("Nematic order parameter distribution", fontsize=14)
     fig.savefig(out_path, dpi=200)
     print(f"Wrote {out_path}")
+
+    plot_avg_s_vs_temperature(
+        order_dir=order_dir,
+        out_path=Path(args.avg_out),
+        bins=args.bins,
+    )
     return 0
 
 
