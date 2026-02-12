@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable, Sequence
 
 import numpy as np
 
@@ -24,11 +23,20 @@ def _default_gro_dirs(data_root: Path) -> list[Path]:
     ]
 
 
+def _pick_axis(axes, axis: str) -> np.ndarray:
+    if axis == "molzax":
+        return axes.molzax
+    if axis == "ddir":
+        return axes.ddir
+    raise ValueError(f"Unsupported axis '{axis}'. Expected 'molzax' or 'ddir'.")
+
+
 def compute_order_for_dir(
     gro_dir: Path,
     nframes: int = 1000,
     natoms_per_mol: int = 38,
     show_progress: bool = True,
+    axis: str = "molzax",
 ) -> np.ndarray:
     """Compute largest PAF eigenvalue S for each frame in a trajectory."""
     s_values = np.zeros(nframes, dtype=float)
@@ -40,7 +48,7 @@ def compute_order_for_dir(
         frame_path = gro_dir / f"frame{i}.gro"
         frame = read_gro_frame(frame_path, natoms_per_mol=natoms_per_mol)
         axes = make_molecular_axes(frame.positions)
-        evals, _ = compute_global_paf(axes.molzax)
+        evals, _ = compute_global_paf(_pick_axis(axes, axis=axis))
         s_values[i] = evals[0]
 
     return s_values
@@ -52,6 +60,7 @@ def compute_and_save_order(
     nframes: int = 1000,
     natoms_per_mol: int = 38,
     show_progress: bool = True,
+    axis: str = "molzax",
 ) -> list[Path]:
     """Compute S for each trajectory and save as .npy files.
 
@@ -70,8 +79,10 @@ def compute_and_save_order(
             nframes=nframes,
             natoms_per_mol=natoms_per_mol,
             show_progress=show_progress,
+            axis=axis,
         )
-        out_path = out_dir / f"{gro_dir.name.replace(' ', '_')}_S.npy"
+        suffix = "_S.npy" if axis == "molzax" else f"_{axis}_S.npy"
+        out_path = out_dir / f"{gro_dir.name.replace(' ', '_')}{suffix}"
         np.save(out_path, s_values)
         outputs.append(out_path)
 

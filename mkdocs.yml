@@ -1,0 +1,62 @@
+site_name: nematics
+site_description: Nematics trajectory analysis and pair-correlation toolkit
+site_url: https://local/nematics
+
+theme:
+  name: material
+  language: en
+  logo: null
+  favicon: null
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - search.highlight
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: blue grey
+      accent: cyan
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Quickstart: getting-started.md
+  - Workflows: workflows.md
+  - CLI Reference: cli-reference.md
+  - Architecture: architecture.md
+  - Math:
+      - Order Parameter: math/order-parameter.md
+      - Pair Correlations: math/pair-correlations.md
+  - Plotting Guide: plotting.md
+  - Troubleshooting: troubleshooting.md

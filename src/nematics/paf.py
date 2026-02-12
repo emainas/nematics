@@ -23,29 +23,35 @@ def unitvec(v: np.ndarray) -> np.ndarray:
 
 
 def make_molecular_axes(positions: np.ndarray) -> MolecularAxes:
-    """Replicate MOL_AXES_FRAME_1 for all molecules.
+    """Replicate MakeAlldirsOfSnap from the 11-feb-2026 Fortran code.
 
     positions: (nmols, natoms_per_mol, 3)
     Uses 1-based Fortran atom indices:
-    - molcm from atoms 8, 10, 12
+    - molcm from atoms 2, 6, 14
     - molzax from atom 9 -> 10
+    - ee helper vector from atom10 + atom16 - 2*atom15
+    - molxax = unitvec(cross(ee, molzax))
+    - molyax = unitvec(cross(molzax, molxax))
     - dpos from atoms 3, 4
     - ddir from atom 4 -> 3
     """
     # Convert to 0-based indices
-    idx_cm = np.array([7, 9, 11])
-    idx_e1_a = 8
-    idx_e1_b = 9
+    idx_cm = np.array([1, 5, 13])
+    idx_z_a = 8
+    idx_z_b = 9
+    idx_ee1 = 9
+    idx_ee2 = 15
+    idx_ee3 = 14
     idx_dpos = np.array([2, 3])
     idx_ddir_a = 3
     idx_ddir_b = 2
 
     molcm = positions[:, idx_cm, :].mean(axis=1)
-    e1 = unitvec(positions[:, idx_e1_a, :] - positions[:, idx_e1_b, :])
+    molzax = unitvec(positions[:, idx_z_a, :] - positions[:, idx_z_b, :])
 
-    molzax = e1.copy()
-    molyax = unitvec(e1)
-    molxax = unitvec(e1)
+    ee = positions[:, idx_ee1, :] + positions[:, idx_ee2, :] - 2.0 * positions[:, idx_ee3, :]
+    molxax = unitvec(np.cross(ee, molzax))
+    molyax = unitvec(np.cross(molzax, molxax))
 
     dpos = positions[:, idx_dpos, :].mean(axis=1)
     ddir = unitvec(positions[:, idx_ddir_a, :] - positions[:, idx_ddir_b, :])
@@ -93,7 +99,7 @@ def compute_global_paf(dirs: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     om[2, 2] -= nn / 3.0
 
     evals, evecs = np.linalg.eigh(om)
-    # sort descending to match Fortran usage
+    # Sort descending to match Fortran usage.
     order = np.argsort(evals)[::-1]
     evals = evals[order]
     evecs = evecs[:, order]

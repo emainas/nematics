@@ -1,0 +1,28 @@
+:root {
+  --md-primary-fg-color: #2f3a45;
+  --md-accent-fg-color: #0e7490;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  letter-spacing: 0.01em;
+  font-weight: 600;
+}
+
+.md-typeset code {
+  border-radius: 4px;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 6px;
+}
+
+.md-grid {
+  max-width: 1180px;
+}
+
+.md-typeset table:not([class]) th {
+  white-space: nowrap;
+}
