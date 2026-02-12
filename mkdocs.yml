@@ -51,6 +51,7 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - Results Report: results-report.md
   - Quickstart: getting-started.md
   - Workflows: workflows.md
   - CLI Reference: cli-reference.md

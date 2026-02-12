@@ -3,6 +3,7 @@
 Python translation of legacy Fortran analysis for 5CB Gromacs trajectories.
 
 Documentation is available [here](docs/index.md).
+Results report with generated figures is [here](docs/results-report.md).
 
 ## Quick start
 

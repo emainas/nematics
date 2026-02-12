@@ -13,6 +13,7 @@ This documentation is written for two audiences:
 
 ## Documentation map
 
+- **Results Report**: ready-to-share figures and summary metrics
 - **Quickstart**: setup + first successful run
 - **Workflows**: reproducible command sequences for full analysis
 - **CLI Reference**: all commands and arguments
