@@ -16,7 +16,7 @@ uv pip install -e .
 Run on a single frame:
 
 ```bash
-nematics paf --gro-dir "data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro" --frame 0
+nematics paf --gro-dir "<GRO_DIR>" --frame 0
 ```
 
 Plot P(S) from saved order data:
@@ -29,14 +29,14 @@ python plotting/plot_ps.py
 Compute and save S for all four trajectories:
 
 ```bash
-nematics order
+nematics order --data-root "<DATA_ROOT>" --out-dir "<ORDER_DIR>"
 ```
 
 Recompute order with the `11-feb-2026` CN-dipole director (`ddir`) instead of the
 legacy molecular long axis (`molzax`):
 
 ```bash
-nematics order --axis ddir --out-dir data/order
+nematics order --data-root "<DATA_ROOT>" --axis ddir --out-dir "<ORDER_DIR>"
 ```
 
 Compute the new `11-feb-2026` Fortran-style pair-correlation histograms for one trajectory:
@@ -46,9 +46,9 @@ Compute the new `11-feb-2026` Fortran-style pair-correlation histograms for one 
 nematics build-fortran
 
 nematics paircorr \
-  --gro-dir "data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro" \
-  --label 356 \
-  --out-dir data/paircorr \
+  --gro-dir "<GRO_DIR>" \
+  --label "<RUN_LABEL>" \
+  --out-dir "<PAIRCORR_DIR>" \
   --backend auto \
   --save-every 0
 ```
@@ -75,14 +75,21 @@ python plotting/plot_ps.py --no-progress
 To reproduce the current report figures from saved order arrays:
 
 ```bash
-python plotting/plot_ps.py --order-dir data/order
+python plotting/plot_ps.py --order-dir "<ORDER_DIR>"
 ```
 
-To generate pair-correlation analysis figures from `data/paircorr/*.dat`:
+To generate pair-correlation analysis figures from `<PAIRCORR_DIR>/*.dat`:
 
 ```bash
-python plotting/plot_paircorr.py --paircorr-dir data/paircorr --out-dir reports/paircorr
+python plotting/plot_paircorr.py --paircorr-dir "<PAIRCORR_DIR>" --out-dir "<REPORT_DIR>"
 ```
+
+Example values in this repo:
+- `<DATA_ROOT>`: `data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign`
+- `<GRO_DIR>`: `data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro`
+- `<ORDER_DIR>`: `data/order`
+- `<PAIRCORR_DIR>`: `data/paircorr`
+- `<REPORT_DIR>`: `reports/paircorr`
 
 ## Documentation (MkDocs)
 

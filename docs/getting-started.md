@@ -16,12 +16,19 @@ If you also want documentation tooling:
 uv pip install -e ".[docs]"
 ```
 
-## 2. Verify data path
+## 2. Set your paths
 
-The project expects trajectory folders under:
+Define these before running commands:
+
+- `<DATA_ROOT>`: directory containing trajectory folders
+- `<GRO_DIR>`: one trajectory directory containing `frame*.gro`
+- `<ORDER_DIR>`: where `*_S.npy` files will be written
+- `<PAIRCORR_DIR>`: where paircorr `.dat` files will be written
+
+Expected `<DATA_ROOT>` layout:
 
 ```text
-data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/
+<DATA_ROOT>/
   gro/
   gro 2/
   gro 3/
@@ -31,29 +38,29 @@ data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/
 Check quickly:
 
 ```bash
-ls "data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro/frame0.gro"
+ls "<GRO_DIR>/frame0.gro"
 ```
 
 ## 3. First command: single-frame PAF
 
 ```bash
 nematics paf \
-  --gro-dir "data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro" \
+  --gro-dir "<GRO_DIR>" \
   --frame 0
 ```
 
 ## 4. Compute order arrays (for report plots)
 
 ```bash
-nematics order --axis molzax --out-dir data/order
+nematics order --data-root "<DATA_ROOT>" --axis molzax --out-dir "<ORDER_DIR>"
 ```
 
 This produces:
 
-- `data/order/gro_S.npy`
-- `data/order/gro_2_S.npy`
-- `data/order/gro_3_S.npy`
-- `data/order/gro_4_S.npy`
+- `<ORDER_DIR>/gro_S.npy`
+- `<ORDER_DIR>/gro_2_S.npy`
+- `<ORDER_DIR>/gro_3_S.npy`
+- `<ORDER_DIR>/gro_4_S.npy`
 
 ## 5. Build fast paircorr backend
 
@@ -66,9 +73,9 @@ nematics build-fortran
 ```bash
 for d in "gro" "gro 2" "gro 3" "gro 4"; do
   nematics paircorr \
-    --gro-dir "data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/$d" \
+    --gro-dir "<DATA_ROOT>/$d" \
     --label "${d// /_}" \
-    --out-dir data/paircorr \
+    --out-dir "<PAIRCORR_DIR>" \
     --backend fortran \
     --save-every 0
 done
@@ -79,11 +86,21 @@ done
 Order figures:
 
 ```bash
-python plotting/plot_ps.py --order-dir data/order
+python plotting/plot_ps.py --order-dir "<ORDER_DIR>"
 ```
 
 Paircorr figures:
 
 ```bash
-python plotting/plot_paircorr.py --paircorr-dir data/paircorr --out-dir reports/paircorr
+python plotting/plot_paircorr.py --paircorr-dir "<PAIRCORR_DIR>" --out-dir "<REPORT_DIR>"
 ```
+
+## Optional concrete example
+
+In this repository:
+
+- `<DATA_ROOT>` = `data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign`
+- `<GRO_DIR>` = `data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro`
+- `<ORDER_DIR>` = `data/order`
+- `<PAIRCORR_DIR>` = `data/paircorr`
+- `<REPORT_DIR>` = `reports/paircorr`

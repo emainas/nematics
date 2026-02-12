@@ -5,7 +5,7 @@
 Command:
 
 ```bash
-python plotting/plot_ps.py --order-dir data/order
+python plotting/plot_ps.py --order-dir "<ORDER_DIR>"
 ```
 
 Input expected:
@@ -32,7 +32,7 @@ Generated figures:
 Command:
 
 ```bash
-python plotting/plot_paircorr.py --paircorr-dir data/paircorr --out-dir reports/paircorr
+python plotting/plot_paircorr.py --paircorr-dir "<PAIRCORR_DIR>" --out-dir "<REPORT_DIR>"
 ```
 
 ### Panels produced

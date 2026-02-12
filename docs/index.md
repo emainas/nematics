@@ -26,7 +26,7 @@ This documentation is written for two audiences:
 ```bash
 source .venv-nematics/bin/activate
 uv pip install -e ".[viz]"
-nematics paf --gro-dir "data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro" --frame 0
+nematics paf --gro-dir "<GRO_DIR>" --frame 0
 ```
 
 If this runs and prints three eigenvalues/eigenvectors, your environment is healthy.
