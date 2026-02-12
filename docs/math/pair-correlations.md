@@ -121,3 +121,25 @@ Species definition:
 ## Plot mapping
 
 `plotting/plot_paircorr.py` currently plots **col 2** for all panels, so those curves are the $W_2$ orientational-correlation channel.
+
+## Plots
+
+### 5CB along director
+
+![5CB along director](../assets/report/paircorr_5cb_along_director.png)
+
+### CN along director
+
+![CN along director](../assets/report/paircorr_cn_along_director.png)
+
+### 5CB perpendicular and radial
+
+![5CB perpendicular and radial](../assets/report/paircorr_5cb_perp_radial.png)
+
+### CN perpendicular and radial
+
+![CN perpendicular and radial](../assets/report/paircorr_cn_perp_radial.png)
+
+### CN dipole radial
+
+![CN dipole radial](../assets/report/paircorr_cn_dipole_radial.png)

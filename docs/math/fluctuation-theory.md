@@ -86,6 +86,16 @@ $$
 \langle S\rangle_{\mathrm{LDT}}=\int_0^{0.5} s\,P_{\mathrm{LDT}}(s)\,ds.
 $$
 
+## Plots
+
+### Susceptibility time series (input to the theory model)
+
+![Susceptibility timeseries](../assets/report/gro_4_chi_timeseries.png)
+
+### Histogram of \(S\) with CLT/LDT overlays
+
+![S histogram with CLT and LDT overlays](../assets/report/s_isotropic_theory.png)
+
 ## Reference
 
 Mainas, E., & Stratt, R. M. *Exceptionally large fluctuations in orientational order: The lessons of large-deviation theory for liquid crystalline systems.* Journal of Chemical Physics, 162, 024501 (2025).
