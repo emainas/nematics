@@ -45,7 +45,7 @@ python plotting/plot_paircorr.py --paircorr-dir "<PAIRCORR_DIR>" --out-dir "<REP
 
 ### What is plotted now
 
-`plot_paircorr.py` reads column 2 (`W_2`) from each `.dat` file as the plotted `g1` channel.
+`plot_paircorr.py` reads column 2 (`W_2`) from each `.dat` file as the plotted \(g_1\) channel.
 
 That is:
 
@@ -74,7 +74,7 @@ Use `plot_s_isotropic_theory.py` to overlay:
 - histogram of largest eigenvalue `S`
 - central-limit-theory (CLT) curve
 - large-deviation-theory (LDT) curve
-- vertical line at mean histogram `S`
+- vertical line at mean histogram \(\langle S\rangle\)
 
 Recommended fast path (reuse precomputed arrays):
 

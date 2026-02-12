@@ -24,10 +24,10 @@
 Each `*.dat` file has shape `(200, 12)`:
 
 - column 0: bin center
-- column 1: normalized counts `g0`-like channel
+- column 1: normalized counts \(g_0\)-like channel
 - columns 2..11: weighted orientational channels from Fortran `WW`
 
-In current plotting scripts, **column 2** (`WW(2)` channel) is used as `g1`.
+In current plotting scripts, **column 2** (`WW(2)` channel) is used as \(g_1\).
 
 ## Fortran acceleration design
 

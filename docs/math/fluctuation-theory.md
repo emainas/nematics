@@ -8,7 +8,7 @@ The model uses:
 
 - number of molecules: $N$
 - mean susceptibility from trajectory: $\chi = \langle \chi_t \rangle$
-- fit parameter: $\beta\epsilon$
+- fit parameter: $\beta\varepsilon$
 
 with
 
@@ -53,7 +53,7 @@ $$
 
 $$
 \Phi(q)= -\ln(1-q)-q + \left(-\frac12+\frac{5}{2\chi}\right)q^2
--\left(\frac79-\frac{5}{3\chi}-\frac{\beta\epsilon}{3}\right)q^3
+-\left(\frac79-\frac{5}{3\chi}-\frac{\beta\varepsilon}{3}\right)q^3
 $$
 
 $$
@@ -72,12 +72,12 @@ $$
 I(s)=-\frac{1}{N}\ln\left(P_{\mathrm{LDT}}(s)+\varepsilon\right),\quad \varepsilon=10^{-10}.
 $$
 
-## Fitting $\beta\epsilon$
+## Fitting $\beta\varepsilon$
 
-$\beta\epsilon$ is solved numerically from
+$\beta\varepsilon$ is solved numerically from
 
 $$
-\langle S\rangle_{\mathrm{hist}}-\langle S\rangle_{\mathrm{LDT}}(\beta\epsilon)=0.
+\langle S\rangle_{\mathrm{hist}}-\langle S\rangle_{\mathrm{LDT}}(\beta\varepsilon)=0.
 $$
 
 where
@@ -92,7 +92,7 @@ $$
 
 ![Susceptibility timeseries](../assets/report/gro_4_chi_timeseries.png)
 
-### Histogram of \(S\) with CLT/LDT overlays
+### Histogram of S with CLT/LDT Overlays
 
 ![S histogram with CLT and LDT overlays](../assets/report/s_isotropic_theory.png)
 

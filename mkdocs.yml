@@ -8,7 +8,6 @@ theme:
   logo: null
   favicon: null
   features:
-    - navigation.instant
     - navigation.sections
     - navigation.expand
     - navigation.top

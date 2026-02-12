@@ -111,7 +111,7 @@ Species definition:
 
 - col 0: bin center
 - col 1: baseline count channel ($g_0$-like)
-- col 2: $W_2$ channel (used as `g1` in current plotting)
+- col 2: $W_2$ channel (used as \(g_1\) in current plotting)
 - col 3: $W_3$
 - col 4: $W_4$
 - col 5: $W_5$

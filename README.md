@@ -94,12 +94,6 @@ The generated `.dat` files include:
 - `*_5CB_par_1.0.dat`, `*_5CB_par_2.0.dat`, `*_5CB_par_3.0.dat`, `*_5CB_par_all.dat`, `*_5CB_per.dat`, `*_5CB_rad.dat`
 - `*_CN_par_1.0.dat`, `*_CN_par_2.0.dat`, `*_CN_par_3.0.dat`, `*_CN_par_all.dat`, `*_CN_per.dat`, `*_CN_rad.dat`
 
-## Example Outputs
-
-![P(S) distribution](reports/p_s_hist.png)
-
-![Average S vs Temperature](reports/avg_s_vs_t.png)
-
 If you want to disable progress output:
 
 ```bash

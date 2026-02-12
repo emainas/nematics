@@ -50,10 +50,10 @@ The largest scaled eigenvalue \(S_1\) is the reported nematic order parameter \(
 - histogram \(P(S)\)
 - average \(\langle S\rangle\) vs temperature
 
-### \(P(S)\) from simulation
+### PS Distribution from Simulation
 
 ![P(S) distribution](../assets/report/p_s_hist.png)
 
-### \(\langle S\rangle\) vs temperature
+### Mean S vs Temperature
 
 ![Average S vs temperature](../assets/report/avg_s_vs_t.png)

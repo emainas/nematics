@@ -14,7 +14,7 @@ This page summarizes generated analysis outputs as a compact report.
 - Std largest eigenvalue: **0.02722**
 - Mean susceptibility: **18.54695**
 - Std susceptibility: **7.62422**
-- Fitted theory parameter: **$\beta\epsilon = 0.806686$**
+- Fitted theory parameter: **$\beta\varepsilon = 0.806686$**
 
 ## Order parameter results
 

@@ -11,6 +11,16 @@ window.MathJax = {
   },
 };
 
+function typesetMath() {
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    window.MathJax.typesetPromise();
+  }
+}
+
 document$.subscribe(() => {
-  MathJax.typesetPromise();
+  typesetMath();
+});
+
+window.addEventListener("load", () => {
+  typesetMath();
 });
