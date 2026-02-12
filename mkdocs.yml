@@ -58,5 +58,6 @@ nav:
   - Math:
       - Order Parameter: math/order-parameter.md
       - Pair Correlations: math/pair-correlations.md
+      - CLT and LDT for S: math/fluctuation-theory.md
   - Plotting Guide: plotting.md
   - Troubleshooting: troubleshooting.md

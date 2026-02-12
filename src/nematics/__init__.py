@@ -9,6 +9,11 @@ from .paircorr import (
     compute_paircorr_for_dir,
     save_paircorr_results,
 )
+from .susceptibility import (
+    compute_susceptibility,
+    compute_susceptibility_timeseries,
+    save_susceptibility_timeseries,
+)
 
 __all__ = [
     "read_gro_frame",
@@ -22,4 +27,7 @@ __all__ = [
     "PairCorrelationResults",
     "compute_paircorr_for_dir",
     "save_paircorr_results",
+    "compute_susceptibility",
+    "compute_susceptibility_timeseries",
+    "save_susceptibility_timeseries",
 ]

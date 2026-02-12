@@ -66,3 +66,40 @@ Edit `plotting/plot_paircorr.py` and change selected column index:
 - col 6: `y`-axis correlation
 
 This can expose additional signatures (biaxial/tilt trends).
+
+## 4. Isotropic S histogram with CLT/LDT overlays
+
+Use `plot_s_isotropic_theory.py` to overlay:
+
+- histogram of largest eigenvalue `S`
+- central-limit-theory (CLT) curve
+- large-deviation-theory (LDT) curve
+- vertical line at mean histogram `S`
+
+Recommended fast path (reuse precomputed arrays):
+
+```bash
+python plotting/plot_s_isotropic_theory.py \
+  --s-file data/order/gro_4_S.npy \
+  --chi-file data/susceptibility/gro_4_chi.npy \
+  --num-particles 1000 \
+  --out reports/s_isotropic_theory.png \
+  --no-progress
+```
+
+Trajectory-driven path (recomputes `S` and `chi` first):
+
+```bash
+python plotting/plot_s_isotropic_theory.py \
+  --gro-dir "<GRO_DIR_ISOTROPIC>" \
+  --nframes 1000 \
+  --axis molzax \
+  --out reports/s_isotropic_theory.png
+```
+
+The CLT and LDT expressions and fitting equation are documented in
+`docs/math/fluctuation-theory.md`.
+
+Reference used for this theory overlay:
+
+Mainas, E., & Stratt, R. M. *Exceptionally large fluctuations in orientational order: The lessons of large-deviation theory for liquid crystalline systems.* Journal of Chemical Physics, 162, 024501 (2025).

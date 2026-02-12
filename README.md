@@ -56,6 +56,39 @@ nematics paircorr \
 `--backend auto` uses Fortran if available (falls back to Python).  
 Use `--backend fortran` to force compiled mode.
 
+Compute orientational susceptibility time series (from molecular orientation vectors):
+
+```bash
+nematics susceptibility \
+  --gro-dir "<GRO_DIR>" \
+  --nframes 1000 \
+  --axis molzax \
+  --out "data/susceptibility/chi.npy"
+```
+
+Plot susceptibility time series and mean:
+
+```bash
+python plotting/plot_susceptibility.py \
+  --chi-file "data/susceptibility/chi.npy" \
+  --out "reports/susceptibility_timeseries.png"
+```
+
+For isotropic-phase analysis (typically `gro 4`), plot the histogram of the largest
+eigenvalue `S` with CLT and LDT overlays:
+
+```bash
+python plotting/plot_s_isotropic_theory.py \
+  --s-file data/order/gro_4_S.npy \
+  --chi-file data/susceptibility/gro_4_chi.npy \
+  --num-particles 1000 \
+  --out "reports/s_isotropic_theory.png"
+```
+
+Theory reference for CLT/LDT overlay:
+
+Mainas, E., & Stratt, R. M. *Exceptionally large fluctuations in orientational order: The lessons of large-deviation theory for liquid crystalline systems.* Journal of Chemical Physics, 162, 024501 (2025).
+
 The generated `.dat` files include:
 - `*_5CB_par_1.0.dat`, `*_5CB_par_2.0.dat`, `*_5CB_par_3.0.dat`, `*_5CB_par_all.dat`, `*_5CB_per.dat`, `*_5CB_rad.dat`
 - `*_CN_par_1.0.dat`, `*_CN_par_2.0.dat`, `*_CN_par_3.0.dat`, `*_CN_par_all.dat`, `*_CN_per.dat`, `*_CN_rad.dat`

@@ -3,11 +3,14 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import numpy as np
+
 from .fortran_backend import build_paircorr_fortran
 from .gro import read_gro_frame
 from .order import compute_and_save_order
 from .paf import compute_global_paf, make_molecular_axes
 from .paircorr import compute_paircorr_for_dir, save_paircorr_results
+from .susceptibility import compute_susceptibility_timeseries, save_susceptibility_timeseries
 
 
 def _resolve_input_path(path_value: str) -> Path:
@@ -77,6 +80,50 @@ def main() -> int:
         help="Orientation axis used in global PAF. molzax preserves legacy report output.",
     )
     order_parser.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="Disable progress display",
+    )
+
+    susc_parser = subparsers.add_parser(
+        "susceptibility",
+        help="Compute orientational susceptibility timeseries from a trajectory",
+    )
+    susc_parser.add_argument(
+        "--gro-dir",
+        required=True,
+        help="Directory containing frame*.gro files",
+    )
+    susc_parser.add_argument(
+        "--out",
+        default="data/susceptibility/chi.npy",
+        help="Output .npy path for susceptibility timeseries",
+    )
+    susc_parser.add_argument(
+        "--nframes",
+        type=int,
+        default=1000,
+        help="Number of frames to read",
+    )
+    susc_parser.add_argument(
+        "--start-frame",
+        type=int,
+        default=0,
+        help="Starting frame index",
+    )
+    susc_parser.add_argument(
+        "--natoms-per-mol",
+        type=int,
+        default=38,
+        help="Atoms per molecule",
+    )
+    susc_parser.add_argument(
+        "--axis",
+        choices=["molzax", "ddir"],
+        default="molzax",
+        help="Orientation axis used for susceptibility",
+    )
+    susc_parser.add_argument(
         "--no-progress",
         action="store_true",
         help="Disable progress display",
@@ -184,6 +231,21 @@ def main() -> int:
         )
         for path in outputs:
             print(f"Wrote {path}")
+        return 0
+
+    if args.command == "susceptibility":
+        gro_dir = _resolve_input_path(args.gro_dir)
+        chi = compute_susceptibility_timeseries(
+            gro_dir=gro_dir,
+            nframes=args.nframes,
+            start_frame=args.start_frame,
+            natoms_per_mol=args.natoms_per_mol,
+            axis=args.axis,
+            show_progress=not args.no_progress,
+        )
+        out = save_susceptibility_timeseries(chi, args.out)
+        print(f"Wrote {out}")
+        print(f"Mean susceptibility: {float(np.mean(chi)):.6f}")
         return 0
 
     if args.command == "paircorr":

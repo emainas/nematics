@@ -727,8 +727,8 @@
 <h2 id="workflow-a-reproduce-existing-order-report">Workflow A: reproduce existing order report<a class="headerlink" href="#workflow-a-reproduce-existing-order-report" title="Permanent link">&para;</a></h2>
 <p>Use this if your goal is to reproduce the current <code>P(S)</code> and average-<code>S</code> figures.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">source</span><span class="w"> </span>.venv-nematics/bin/activate
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>nematics<span class="w"> </span>order<span class="w"> </span>--axis<span class="w"> </span>molzax<span class="w"> </span>--out-dir<span class="w"> </span>data/order
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python<span class="w"> </span>plotting/plot_ps.py<span class="w"> </span>--order-dir<span class="w"> </span>data/order
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>nematics<span class="w"> </span>order<span class="w"> </span>--data-root<span class="w"> </span><span class="s2">&quot;&lt;DATA_ROOT&gt;&quot;</span><span class="w"> </span>--axis<span class="w"> </span>molzax<span class="w"> </span>--out-dir<span class="w"> </span><span class="s2">&quot;&lt;ORDER_DIR&gt;&quot;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python<span class="w"> </span>plotting/plot_ps.py<span class="w"> </span>--order-dir<span class="w"> </span><span class="s2">&quot;&lt;ORDER_DIR&gt;&quot;</span>
 </code></pre></div>
 <p>Outputs:</p>
 <ul>
@@ -737,25 +737,25 @@
 </ul>
 <h2 id="workflow-b-cn-director-variant">Workflow B: CN-director variant<a class="headerlink" href="#workflow-b-cn-director-variant" title="Permanent link">&para;</a></h2>
 <p>The 11-feb Fortran path often uses dipole-derived director context.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>nematics<span class="w"> </span>order<span class="w"> </span>--axis<span class="w"> </span>ddir<span class="w"> </span>--out-dir<span class="w"> </span>data/order
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>nematics<span class="w"> </span>order<span class="w"> </span>--data-root<span class="w"> </span><span class="s2">&quot;&lt;DATA_ROOT&gt;&quot;</span><span class="w"> </span>--axis<span class="w"> </span>ddir<span class="w"> </span>--out-dir<span class="w"> </span><span class="s2">&quot;&lt;ORDER_DIR&gt;&quot;</span>
 </code></pre></div>
 <p>This writes <code>*_ddir_S.npy</code> files.</p>
 <h2 id="workflow-c-full-pair-correlation-pipeline">Workflow C: full pair-correlation pipeline<a class="headerlink" href="#workflow-c-full-pair-correlation-pipeline" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>nematics<span class="w"> </span>build-fortran
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">for</span><span class="w"> </span>d<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">&quot;gro&quot;</span><span class="w"> </span><span class="s2">&quot;gro 2&quot;</span><span class="w"> </span><span class="s2">&quot;gro 3&quot;</span><span class="w"> </span><span class="s2">&quot;gro 4&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>nematics<span class="w"> </span>paircorr<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>--gro-dir<span class="w"> </span><span class="s2">&quot;data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/</span><span class="nv">$d</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>--gro-dir<span class="w"> </span><span class="s2">&quot;&lt;DATA_ROOT&gt;/</span><span class="nv">$d</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span>--label<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">d</span><span class="p">// /_</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span>--out-dir<span class="w"> </span>data/paircorr<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span>--out-dir<span class="w"> </span><span class="s2">&quot;&lt;PAIRCORR_DIR&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span>--backend<span class="w"> </span>fortran<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span>--save-every<span class="w"> </span><span class="m">0</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="k">done</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>python<span class="w"> </span>plotting/plot_paircorr.py<span class="w"> </span>--paircorr-dir<span class="w"> </span>data/paircorr<span class="w"> </span>--out-dir<span class="w"> </span>reports/paircorr
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>python<span class="w"> </span>plotting/plot_paircorr.py<span class="w"> </span>--paircorr-dir<span class="w"> </span><span class="s2">&quot;&lt;PAIRCORR_DIR&gt;&quot;</span><span class="w"> </span>--out-dir<span class="w"> </span><span class="s2">&quot;reports/paircorr&quot;</span>
 </code></pre></div>
 <h2 id="workflow-d-debugsmoke-run-fast">Workflow D: debug/smoke run (fast)<a class="headerlink" href="#workflow-d-debugsmoke-run-fast" title="Permanent link">&para;</a></h2>
 <p>Use for validation before long jobs:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>nematics<span class="w"> </span>paircorr<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>--gro-dir<span class="w"> </span><span class="s2">&quot;data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>--gro-dir<span class="w"> </span><span class="s2">&quot;&lt;GRO_DIR&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>--label<span class="w"> </span>smoke<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>--out-dir<span class="w"> </span>/tmp/paircorr_smoke<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span>--nframes<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
@@ -766,7 +766,7 @@
 <ul>
 <li>Use <code>--backend fortran</code> for production runs.</li>
 <li>Keep <code>--save-every 0</code> unless you need crash recovery checkpoints.</li>
-<li>For very long jobs, run one directory at a time and archive <code>data/paircorr</code> outputs immediately.</li>
+<li>For very long jobs, run one directory at a time and archive <code>&lt;PAIRCORR_DIR&gt;</code> outputs immediately.</li>
 </ul>
 
 
