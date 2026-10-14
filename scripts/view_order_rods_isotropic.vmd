@@ -1,0 +1,184 @@
+# VMD visualization for the isotropic 5CB trajectory as orientation rods.
+#
+# Run from the repository root:
+#   vmd -e scripts/view_order_rods_isotropic.vmd
+#
+# The source XYZ file is only loaded by VMD. This script does not write or
+# modify trajectory files.
+
+set isotropic_xyz "reports/gro_4_isotropic_trajectory.xyz"
+# 5CB-specific layout from the nematics order-parameter code.
+set atoms_per_mol 38
+set cm_local_indices {1 5 13}
+set z_axis_a 8
+set z_axis_b 9
+
+# Tune these for clarity/performance.
+set rod_stride 2
+set rod_half_length 4.0
+set rod_radius 0.25
+set rod_resolution 12
+set box_edge_radius 0.08
+set box_padding 0.5
+
+display projection Orthographic
+display depthcue off
+axes location Off
+color Display Background white
+
+proc remove_atom_reps {molid} {
+    mol delrep 0 $molid
+}
+
+proc vec_add {a b} {
+    return [list \
+        [expr {[lindex $a 0] + [lindex $b 0]}] \
+        [expr {[lindex $a 1] + [lindex $b 1]}] \
+        [expr {[lindex $a 2] + [lindex $b 2]}]]
+}
+
+proc vec_sub {a b} {
+    return [list \
+        [expr {[lindex $a 0] - [lindex $b 0]}] \
+        [expr {[lindex $a 1] - [lindex $b 1]}] \
+        [expr {[lindex $a 2] - [lindex $b 2]}]]
+}
+
+proc vec_scale {s a} {
+    return [list \
+        [expr {$s * [lindex $a 0]}] \
+        [expr {$s * [lindex $a 1]}] \
+        [expr {$s * [lindex $a 2]}]]
+}
+
+proc vec_unit {a} {
+    set n [expr {sqrt([lindex $a 0] * [lindex $a 0] + [lindex $a 1] * [lindex $a 1] + [lindex $a 2] * [lindex $a 2])}]
+    if {$n <= 1.0e-12} {
+        return {0.0 0.0 1.0}
+    }
+    return [vec_scale [expr {1.0 / $n}] $a]
+}
+
+proc mean3 {a b c} {
+    return [vec_scale 0.3333333333333333 [vec_add [vec_add $a $b] $c]]
+}
+
+proc coord_bounds {coords padding} {
+    set first [lindex $coords 0]
+    set xmin [lindex $first 0]
+    set xmax [lindex $first 0]
+    set ymin [lindex $first 1]
+    set ymax [lindex $first 1]
+    set zmin [lindex $first 2]
+    set zmax [lindex $first 2]
+
+    foreach p $coords {
+        set x [lindex $p 0]
+        set y [lindex $p 1]
+        set z [lindex $p 2]
+        if {$x < $xmin} { set xmin $x }
+        if {$x > $xmax} { set xmax $x }
+        if {$y < $ymin} { set ymin $y }
+        if {$y > $ymax} { set ymax $y }
+        if {$z < $zmin} { set zmin $z }
+        if {$z > $zmax} { set zmax $z }
+    }
+
+    return [list \
+        [expr {$xmin - $padding}] [expr {$xmax + $padding}] \
+        [expr {$ymin - $padding}] [expr {$ymax + $padding}] \
+        [expr {$zmin - $padding}] [expr {$zmax + $padding}]]
+}
+
+proc draw_box {molid coords} {
+    global box_edge_radius box_padding
+
+    lassign [coord_bounds $coords $box_padding] xmin xmax ymin ymax zmin zmax
+
+    set p000 [list $xmin $ymin $zmin]
+    set p100 [list $xmax $ymin $zmin]
+    set p010 [list $xmin $ymax $zmin]
+    set p110 [list $xmax $ymax $zmin]
+    set p001 [list $xmin $ymin $zmax]
+    set p101 [list $xmax $ymin $zmax]
+    set p011 [list $xmin $ymax $zmax]
+    set p111 [list $xmax $ymax $zmax]
+
+    graphics $molid color black
+    foreach edge [list \
+        [list $p000 $p100] [list $p010 $p110] [list $p001 $p101] [list $p011 $p111] \
+        [list $p000 $p010] [list $p100 $p110] [list $p001 $p011] [list $p101 $p111] \
+        [list $p000 $p001] [list $p100 $p101] [list $p010 $p011] [list $p110 $p111]] {
+        graphics $molid cylinder [lindex $edge 0] [lindex $edge 1] radius $box_edge_radius resolution 8 filled yes
+    }
+
+    graphics $molid color red
+    graphics $molid cylinder $p000 $p100 radius [expr {$box_edge_radius * 1.6}] resolution 8 filled yes
+    graphics $molid color green
+    graphics $molid cylinder $p000 $p010 radius [expr {$box_edge_radius * 1.6}] resolution 8 filled yes
+    graphics $molid color blue
+    graphics $molid cylinder $p000 $p001 radius [expr {$box_edge_radius * 1.6}] resolution 8 filled yes
+
+    graphics $molid color black
+    set label_pos [list $xmin [expr {$ymax + 3.0}] [expr {$zmax + 3.0}]]
+    graphics $molid text $label_pos "isotropic S~0.11" size 2.0 thickness 2.0
+}
+
+proc draw_orientation_rods {molid colorid} {
+    global atoms_per_mol cm_local_indices z_axis_a z_axis_b
+    global rod_stride rod_half_length rod_radius rod_resolution
+
+    set frame [molinfo $molid get frame]
+    set sel [atomselect $molid "all" frame $frame]
+    set coords [$sel get {x y z}]
+    $sel delete
+
+    set natoms [llength $coords]
+    set nmols [expr {$natoms / $atoms_per_mol}]
+
+    graphics $molid delete all
+    graphics $molid color $colorid
+
+    for {set mol 0} {$mol < $nmols} {incr mol $rod_stride} {
+        set base [expr {$mol * $atoms_per_mol}]
+
+        set cm [mean3 \
+            [lindex $coords [expr {$base + [lindex $cm_local_indices 0]}]] \
+            [lindex $coords [expr {$base + [lindex $cm_local_indices 1]}]] \
+            [lindex $coords [expr {$base + [lindex $cm_local_indices 2]}]]]
+
+        set a [lindex $coords [expr {$base + $z_axis_a}]]
+        set b [lindex $coords [expr {$base + $z_axis_b}]]
+        set u [vec_unit [vec_sub $a $b]]
+        set p1 [vec_sub $cm [vec_scale $rod_half_length $u]]
+        set p2 [vec_add $cm [vec_scale $rod_half_length $u]]
+
+        graphics $molid cylinder $p1 $p2 radius $rod_radius resolution $rod_resolution filled yes
+        graphics $molid sphere $p2 radius [expr {$rod_radius * 1.8}] resolution 8
+    }
+
+    draw_box $molid $coords
+}
+
+proc redraw_rods_callback {name index op} {
+    global isotropic_mol
+    if {[info exists isotropic_mol]} {
+        draw_orientation_rods $isotropic_mol cyan
+    }
+}
+
+set isotropic_mol [mol new $isotropic_xyz type xyz waitfor all]
+mol rename $isotropic_mol "5CB isotropic S~0.11"
+remove_atom_reps $isotropic_mol
+
+draw_orientation_rods $isotropic_mol cyan
+
+trace variable vmd_frame($isotropic_mol) w redraw_rods_callback
+
+animate goto 0
+display resetview
+
+puts ""
+puts "Loaded isotropic XYZ trajectory as orientation rods only."
+puts "Rod density: every $rod_stride molecules. Edit rod_stride near the top of scripts/view_order_rods_isotropic.vmd for more or fewer rods."
+puts "Animate in VMD with the timeline or: animate forward"
