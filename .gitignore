@@ -4,5 +4,4 @@ __pycache__/
 *.pyc
 src/nematics/_paircorr_fort*.so
 data/paircorr/
-reports/isoropic.mpg
-reports/nematic.mpg
+reports
