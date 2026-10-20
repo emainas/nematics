@@ -5,3 +5,6 @@ __pycache__/
 src/nematics/_paircorr_fort*.so
 data/paircorr/
 reports
+legacy_fortran_code
+literature
+AGENTS.md
