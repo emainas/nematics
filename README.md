@@ -2,9 +2,6 @@
 
 Python translation of legacy Fortran analysis for 5CB Gromacs trajectories.
 
-Documentation is available [here](docs/index.md).
-Results report with generated figures is [here](docs/results-report.md).
-
 ## Quick start
 
 ```bash
@@ -118,14 +115,3 @@ Example values in this repo:
 - `<ORDER_DIR>`: `data/order`
 - `<PAIRCORR_DIR>`: `data/paircorr`
 - `<REPORT_DIR>`: `reports/paircorr`
-
-## Documentation (MkDocs)
-
-Install docs dependencies and serve locally:
-
-```bash
-uv pip install -e ".[docs]"
-mkdocs serve
-```
-
-Then open the local URL printed by MkDocs (usually `http://127.0.0.1:8000`).
