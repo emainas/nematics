@@ -8,11 +8,19 @@ version = "0.1.0"
 description = "Nematics analysis tools translated from legacy Fortran"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = ["numpy>=1.24"]
+dependencies = [
+  "numpy>=1.24",
+  "tomli>=2; python_version < '3.11'",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
-viz = ["matplotlib>=3.8", "tqdm>=4.66"]
+viz = [
+  "matplotlib>=3.8",
+  "pillow>=10",
+  "scipy>=1.10",
+  "tqdm>=4.66",
+]
 
 [project.scripts]
 nematics = "nematics.cli:main"
@@ -20,5 +28,11 @@ nematics = "nematics.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/nematics"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"config/datasets.toml" = "nematics/datasets.toml"
+
 [tool.pytest.ini_options]
-addopts = "-q"
+addopts = "-q -m 'not integration'"
+markers = [
+  "integration: requires external trajectory data",
+]

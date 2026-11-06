@@ -15,6 +15,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from collections import defaultdict
@@ -26,9 +27,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
-TEMPERATURES = (386, 376, 366, 356)
-RUN_FOR_TEMPERATURE = {386: "gro4", 376: "gro3", 366: "gro2", 356: "gro"}
+from nematics.datasets import get_dataset  # noqa: E402
+
+GAFF_RUNS = tuple(reversed(get_dataset("gaff-5cb").runs))
+TEMPERATURES = tuple(int(run.temperature_k) for run in GAFF_RUNS)
+RUN_FOR_TEMPERATURE = {int(run.temperature_k): run.id for run in GAFF_RUNS}
 SVG_NS = "{http://www.w3.org/2000/svg}"
 CURVE_COLORS = {
     "magenta": "rgb(58.039856%, 0%, 82.745361%)",

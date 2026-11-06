@@ -22,8 +22,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
+REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from analyze_amoeba_5cb_director_paircorr import (  # noqa: E402
     NMOLECULES,
@@ -36,9 +37,12 @@ from analyze_amoeba_5cb_director_paircorr import (  # noqa: E402
     read_csv_records,
     read_result,
 )
+from nematics.datasets import get_dataset  # noqa: E402
 
 
-GAFF_RUNS = (("gro", 356.0), ("gro2", 366.0), ("gro3", 376.0), ("gro4", 386.0))
+GAFF_RUNS = tuple(
+    (run.id, run.temperature_k) for run in get_dataset("gaff-5cb").runs
+)
 
 
 def histogram_values(

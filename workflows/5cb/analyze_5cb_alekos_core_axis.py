@@ -25,9 +25,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from analyze_5cb_g1_director_paircorr import alekos_g1  # noqa: E402
 from analyze_amoeba_5cb_director_paircorr import (  # noqa: E402
@@ -42,13 +42,16 @@ from analyze_amoeba_5cb_director_paircorr import (  # noqa: E402
     read_csv_records,
     read_result,
 )
+from nematics.datasets import get_dataset  # noqa: E402
 from nematics.gro import read_gro_frame  # noqa: E402
 
 
 NATOMS_PER_MOLECULE = 38
 C04 = 8  # zero-based local atom 9
 C10 = 9  # zero-based local atom 10
-GAFF_RUNS = (("gro", 356.0), ("gro2", 366.0), ("gro3", 376.0), ("gro4", 386.0))
+GAFF_5CB = get_dataset("gaff-5cb")
+AMOEBA_5CB = get_dataset("amoeba-5cb")
+GAFF_RUNS = tuple((run.id, run.temperature_k) for run in GAFF_5CB.runs)
 
 
 def quote_cpptraj(path: Path) -> str:
@@ -658,8 +661,8 @@ def write_readme(output: Path, rows: list[dict[str, str | int | float]]) -> None
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--amoeba-root", type=Path, default=Path("/hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7"))
-    parser.add_argument("--gaff-root", type=Path, default=Path("/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign"))
+    parser.add_argument("--amoeba-root", type=Path, default=AMOEBA_5CB.raw_path())
+    parser.add_argument("--gaff-root", type=Path, default=GAFF_5CB.raw_path())
     parser.add_argument("--topology", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order/topology/5cb-x1000-first-frame.pdb"))
     parser.add_argument("--amoeba-geometry-root", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/director-paircorr-end-to-end"))
     parser.add_argument("--gaff-geometry-root", type=Path, default=Path("data-processed/5cb/gaff-zalign/director-paircorr-end-to-end"))

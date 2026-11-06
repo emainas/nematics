@@ -1,7 +1,7 @@
 # VMD visualization for the isotropic 5CB trajectory as orientation rods.
 #
 # Run from the repository root:
-#   vmd -e scripts/view_order_rods_isotropic.vmd
+#   vmd -e tools/view_order_rods_isotropic.vmd
 #
 # The source XYZ file is only loaded by VMD. This script does not write or
 # modify trajectory files.
@@ -180,5 +180,5 @@ display resetview
 
 puts ""
 puts "Loaded isotropic XYZ trajectory as orientation rods only."
-puts "Rod density: every $rod_stride molecules. Edit rod_stride near the top of scripts/view_order_rods_isotropic.vmd for more or fewer rods."
+puts "Rod density: every $rod_stride molecules. Edit rod_stride near the top of tools/view_order_rods_isotropic.vmd for more or fewer rods."
 puts "Animate in VMD with the timeline or: animate forward"

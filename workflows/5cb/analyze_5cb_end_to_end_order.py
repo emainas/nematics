@@ -17,14 +17,16 @@ from pathlib import Path
 
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from nematics.datasets import get_dataset  # noqa: E402
 from nematics.gro import read_gro_frame  # noqa: E402
 from nematics.paf import compute_global_paf, make_end_to_end_axes  # noqa: E402
 
 
-RUNS = (("gro", 356.0), ("gro2", 366.0), ("gro3", 376.0), ("gro4", 386.0))
+GAFF_5CB = get_dataset("gaff-5cb")
+RUNS = tuple((run.id, run.temperature_k) for run in GAFF_5CB.runs)
 NATOMS_PER_MOLECULE = 38
 START_ATOM = 18  # zero-based: local atom 19, C18
 END_ATOM = 3  # zero-based: local atom 4, N01
@@ -227,7 +229,13 @@ def make_plot(results: dict[str, tuple[float, np.ndarray, np.ndarray]], output: 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-root", "--data-root", dest="data_root", type=Path, required=True)
+    parser.add_argument(
+        "--raw-root",
+        "--data-root",
+        dest="data_root",
+        type=Path,
+        default=GAFF_5CB.raw_path(),
+    )
     parser.add_argument("--out-data", type=Path, required=True)
     parser.add_argument("--out-plot", type=Path, required=True)
     parser.add_argument("--nframes", type=int, default=None)

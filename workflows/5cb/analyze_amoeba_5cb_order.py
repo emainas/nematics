@@ -14,14 +14,22 @@ from __future__ import annotations
 
 import argparse
 import csv
-import re
 import shutil
 import subprocess
+import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+
+from nematics.datasets import get_dataset, get_project_paths  # noqa: E402
+
+
+AMOEBA_5CB = get_dataset("amoeba-5cb")
 
 
 ATOMS_PER_MOLECULE = 38
@@ -62,16 +70,10 @@ def quote_cpptraj(path: Path) -> str:
 
 
 def discover_runs(data_root: Path) -> list[Run]:
-    runs: list[Run] = []
-    for trajectory in sorted(data_root.glob("*/5cb-x1000.arc")):
-        label = trajectory.parent.name
-        match = re.search(r"-(\d{3})$", label)
-        if match is None:
-            raise ValueError(f"Cannot infer temperature from run name: {label}")
-        runs.append(Run(label, float(match.group(1)), trajectory.resolve()))
-    if not runs:
-        raise FileNotFoundError(f"No */5cb-x1000.arc files below {data_root}")
-    return sorted(runs, key=lambda run: run.temperature)
+    return [
+        Run(run.id, run.temperature_k, trajectory.resolve())
+        for run, trajectory in AMOEBA_5CB.run_trajectories(data_root)
+    ]
 
 
 def read_first_tinker_frame(path: Path) -> tuple[str, np.ndarray, list[Atom]]:
@@ -447,9 +449,18 @@ def make_plot(rows: list[dict[str, float | int | str]], path: Path) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--raw-root", "--data-root", dest="data_root", type=Path, required=True)
-    parser.add_argument("--out-data", type=Path, required=True)
-    parser.add_argument("--out-plot", type=Path, required=True)
+    parser.add_argument(
+        "--raw-root", "--data-root", dest="data_root", type=Path,
+        default=AMOEBA_5CB.raw_path(),
+    )
+    parser.add_argument(
+        "--out-data", type=Path,
+        default=AMOEBA_5CB.processed_path() / "end-to-end-order",
+    )
+    parser.add_argument(
+        "--out-plot", type=Path,
+        default=get_project_paths().reports_root / "amoeba_5cb_end_to_end_order" / "s_vs_temperature.png",
+    )
     parser.add_argument("--cpptraj", default="cpptraj")
     parser.add_argument("--start", type=int, default=1)
     parser.add_argument("--stop", type=int, default=1000)

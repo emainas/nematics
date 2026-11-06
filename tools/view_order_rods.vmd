@@ -1,7 +1,7 @@
 # VMD visualization for the nematic 5CB trajectory as orientation rods.
 #
 # Run from the repository root:
-#   vmd -e scripts/view_order_rods.vmd
+#   vmd -e tools/view_order_rods.vmd
 #
 # The source XYZ files are only loaded by VMD. This script does not write or
 # modify trajectory files.
@@ -180,5 +180,5 @@ display resetview
 
 puts ""
 puts "Loaded nematic XYZ trajectory as orientation rods only."
-puts "Rod density: every $rod_stride molecules. Edit rod_stride near the top of scripts/view_order_rods.vmd for more or fewer rods."
+puts "Rod density: every $rod_stride molecules. Edit rod_stride near the top of tools/view_order_rods.vmd for more or fewer rods."
 puts "Animate in VMD with the timeline or: animate forward"

@@ -5,12 +5,20 @@ from __future__ import annotations
 
 import argparse
 import csv
+import sys
 from pathlib import Path
 
 import numpy as np
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
-RUNS = (("gro4", 386), ("gro3", 376), ("gro2", 366), ("gro", 356))
+from nematics.datasets import get_dataset  # noqa: E402
+
+RUNS = tuple(
+    (run.id, int(run.temperature_k))
+    for run in reversed(get_dataset("gaff-5cb").runs)
+)
 OBSERVABLES = (
     ("global_par_1", "5CB_par_1.0"),
     ("global_par_2", "5CB_par_2.0"),

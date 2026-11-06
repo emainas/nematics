@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
+from .datasets import get_dataset
 from .gro import read_gro_frame
 from .paf import compute_global_paf, make_molecular_axes
 
@@ -55,7 +56,7 @@ def compute_order_for_dir(
 
 
 def compute_and_save_order(
-    data_root: str | Path = "/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign",
+    data_root: str | Path | None = None,
     out_dir: str | Path = "data-processed/5cb/gaff-zalign/legacy-order",
     nframes: int = 1000,
     natoms_per_mol: int = 38,
@@ -66,7 +67,7 @@ def compute_and_save_order(
 
     Returns list of output file paths.
     """
-    data_root = Path(data_root)
+    data_root = Path(data_root) if data_root is not None else get_dataset("gaff-5cb").raw_path()
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 

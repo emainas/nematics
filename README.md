@@ -8,8 +8,9 @@ conformation and induced-chirality analysis.
 
 - `src/nematics/`: reusable trajectory, order, susceptibility, and
   pair-correlation code
-- `scripts/`: reproducible research workflows
-- `plotting/`: plotting utilities for legacy package outputs
+- `config/datasets.toml`: source-run and processed-layout registry
+- `workflows/`: analysis programs grouped by molecular system
+- `tools/`: trajectory-conversion and VMD utilities
 - `tests/`: automated checks
 - `data-processed/`: generated numerical products, ignored by Git
 - `reports/`: generated figures and reports, ignored by Git
@@ -29,7 +30,8 @@ Use command help for workflow options:
 
 ```bash
 nematics --help
-python scripts/<workflow>.py --help
+nematics datasets --check
+python workflows/<system>/<workflow>.py --help
 ```
 
 AMOEBA workflows generally require AmberTools `cpptraj`. The optional compiled

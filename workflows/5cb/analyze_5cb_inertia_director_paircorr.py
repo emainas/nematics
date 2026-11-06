@@ -18,9 +18,9 @@ from pathlib import Path
 
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from analyze_amoeba_5cb_director_paircorr import (  # noqa: E402
     RADII_NM,
@@ -28,6 +28,7 @@ from analyze_amoeba_5cb_director_paircorr import (  # noqa: E402
     load_cpptraj_centers,
     write_table,
 )
+from nematics.datasets import get_dataset  # noqa: E402
 from nematics.gro import read_gro_frame  # noqa: E402
 
 
@@ -37,7 +38,8 @@ C18 = 18  # zero-based local atom 19
 MASSES = np.asarray(
     [14.007 if atom == 3 else (12.011 if atom < 19 else 1.008) for atom in range(38)]
 )
-GAFF_RUNS = (("gro", 356), ("gro2", 366), ("gro3", 376), ("gro4", 386))
+GAFF_5CB = get_dataset("gaff-5cb")
+GAFF_RUNS = tuple((run.id, run.temperature_k) for run in GAFF_5CB.runs)
 
 
 def frame_number(path: Path) -> int:
@@ -253,7 +255,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--gaff-source-root",
         type=Path,
-        default=Path("/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign"),
+        default=GAFF_5CB.raw_path(),
     )
     parser.add_argument(
         "--gaff-end-pair-root",

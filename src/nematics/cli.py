@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
+from .datasets import dataset_names, get_dataset, get_project_paths
 from .fortran_backend import build_paircorr_fortran
 from .gro import read_gro_frame
 from .order import compute_and_save_order
@@ -27,6 +28,15 @@ def _resolve_input_path(path_value: str) -> Path:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Nematics analysis tools.")
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    datasets_parser = subparsers.add_parser(
+        "datasets", help="List configured raw and processed datasets"
+    )
+    datasets_parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Verify that every configured raw trajectory exists",
+    )
 
     paf_parser = subparsers.add_parser("paf", help="Compute global PAF from a GRO frame")
     paf_parser.add_argument(
@@ -55,7 +65,7 @@ def main() -> int:
         "--raw-root",
         "--data-root",
         dest="data_root",
-        default="/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign",
+        default=str(get_dataset("gaff-5cb").raw_path()),
         help="Read-only source root containing gro, gro2, gro3, and gro4",
     )
     order_parser.add_argument(
@@ -202,6 +212,27 @@ def main() -> int:
     )
 
     args = parser.parse_args()
+
+    if args.command == "datasets":
+        paths = get_project_paths()
+        print(f"Raw root:       {paths.raw_root}")
+        print(f"Processed root: {paths.processed_root}")
+        print(f"Reports root:   {paths.reports_root}")
+        for name in dataset_names():
+            dataset = get_dataset(name)
+            status = ""
+            if args.check:
+                try:
+                    dataset.run_trajectories()
+                except FileNotFoundError:
+                    status = " [missing]"
+                else:
+                    status = " [ok]"
+            print(
+                f"{name:14s} {len(dataset.runs):2d} runs  "
+                f"{dataset.raw_path()}{status}"
+            )
+        return 0
 
     if args.command == "paf":
         gro_dir = _resolve_input_path(args.gro_dir)

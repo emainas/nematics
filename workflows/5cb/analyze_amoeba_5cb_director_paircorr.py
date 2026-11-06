@@ -16,9 +16,9 @@ from __future__ import annotations
 import argparse
 import csv
 import os
-import re
 import shutil
 import subprocess
+import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,6 +29,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
 from scipy.spatial import cKDTree
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+
+from nematics.datasets import get_dataset  # noqa: E402
+
+
+AMOEBA_5CB = get_dataset("amoeba-5cb")
 
 
 NMOLECULES = 1000
@@ -50,15 +58,10 @@ def quote_cpptraj(path: Path) -> str:
 
 
 def discover_runs(root: Path) -> list[Run]:
-    runs: list[Run] = []
-    for trajectory in sorted(root.glob("*/5cb-x1000.arc")):
-        match = re.search(r"-(\d{3})$", trajectory.parent.name)
-        if match is None:
-            raise ValueError(f"Cannot infer temperature from {trajectory.parent.name}")
-        runs.append(Run(trajectory.parent.name, float(match.group(1)), trajectory.resolve()))
-    if len(runs) != 11:
-        raise ValueError(f"Expected 11 AMOEBA 5CB trajectories, found {len(runs)}")
-    return sorted(runs, key=lambda run: run.temperature)
+    return [
+        Run(run.id, run.temperature_k, trajectory.resolve())
+        for run, trajectory in AMOEBA_5CB.run_trajectories(root)
+    ]
 
 
 def write_center_input(
@@ -754,7 +757,7 @@ def parse_args() -> argparse.Namespace:
         "--data-root",
         dest="data_root",
         type=Path,
-        default=Path("/hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7"),
+        default=AMOEBA_5CB.raw_path(),
     )
     parser.add_argument(
         "--topology",

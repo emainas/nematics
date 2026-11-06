@@ -1,0 +1,203 @@
+[paths]
+raw_root = "/hickory/proj/cdpoonlab/users/emainas"
+processed_root = "data-processed"
+reports_root = "reports"
+
+[datasets."gaff-5cb"]
+molecule = "5cb"
+method = "GAFF/GROMACS"
+raw_subdir = "5cb-x1000-gaff-88x88x94-zalign"
+processed_subdir = "5cb/gaff-zalign"
+trajectory = "frame*.gro"
+molecules = 1000
+atoms_per_molecule = 38
+frames = 1000
+temperatures_inferred = true
+
+[[datasets."gaff-5cb".runs]]
+id = "gro"
+temperature_k = 356
+[[datasets."gaff-5cb".runs]]
+id = "gro2"
+temperature_k = 366
+[[datasets."gaff-5cb".runs]]
+id = "gro3"
+temperature_k = 376
+[[datasets."gaff-5cb".runs]]
+id = "gro4"
+temperature_k = 386
+
+[datasets."amoeba-5cb"]
+molecule = "5cb"
+method = "AMOEBA/Tinker"
+raw_subdir = "tinker9-5cb-x1000-pt2.7"
+processed_subdir = "5cb/amoeba-pt2.7"
+trajectory = "5cb-x1000.arc"
+molecules = 1000
+atoms_per_molecule = 38
+frames = 1000
+temperatures_inferred = false
+
+[[datasets."amoeba-5cb".runs]]
+id = "001d_d-md-300"
+temperature_k = 300
+[[datasets."amoeba-5cb".runs]]
+id = "024a_d-md-302"
+historical_processed_id = "003f_d-md-302"
+temperature_k = 302
+[[datasets."amoeba-5cb".runs]]
+id = "004e_d-md-304"
+temperature_k = 304
+[[datasets."amoeba-5cb".runs]]
+id = "006d_d-md-306"
+temperature_k = 306
+[[datasets."amoeba-5cb".runs]]
+id = "009a_d-md-308"
+temperature_k = 308
+[[datasets."amoeba-5cb".runs]]
+id = "012e_d-md-310"
+temperature_k = 310
+[[datasets."amoeba-5cb".runs]]
+id = "013d_d-md-312"
+temperature_k = 312
+[[datasets."amoeba-5cb".runs]]
+id = "014f_d-md-314"
+temperature_k = 314
+[[datasets."amoeba-5cb".runs]]
+id = "016d_d-md-316"
+temperature_k = 316
+[[datasets."amoeba-5cb".runs]]
+id = "017b_d-md-318"
+temperature_k = 318
+[[datasets."amoeba-5cb".runs]]
+id = "019b_d-md-320"
+temperature_k = 320
+
+[datasets."amoeba-cb7cb"]
+molecule = "cb7cb"
+method = "AMOEBA/Tinker"
+raw_subdir = "tinker9-cb7cb-x800-pt2.2-50x50x360-zalign"
+processed_subdir = "cb7cb/amoeba-pt2.2-zalign"
+trajectory = "cb7cb-x800.arc"
+molecules = 800
+atoms_per_molecule = 65
+frames = 1000
+temperatures_inferred = false
+
+[[datasets."amoeba-cb7cb".runs]]
+id = "017a_d-md-338"
+temperature_k = 338
+[[datasets."amoeba-cb7cb".runs]]
+id = "015a_d-md-342"
+temperature_k = 342
+
+[datasets."amoeba-4ocb"]
+molecule = "4ocb"
+method = "AMOEBA/Tinker"
+raw_subdir = "tinker9-4ocb-x1000-pt2.2"
+processed_subdir = "4ocb/amoeba-pt2.2"
+trajectory = "4ocb-x1000.arc"
+molecules = 1000
+atoms_per_molecule = 36
+frames = 1000
+temperatures_inferred = false
+
+[[datasets."amoeba-4ocb".runs]]
+id = "020a_d-md-288"
+temperature_k = 288
+[[datasets."amoeba-4ocb".runs]]
+id = "012a_d-md-296"
+temperature_k = 296
+[[datasets."amoeba-4ocb".runs]]
+id = "009a_d-md-304"
+temperature_k = 304
+[[datasets."amoeba-4ocb".runs]]
+id = "010c_d-md-312"
+temperature_k = 312
+[[datasets."amoeba-4ocb".runs]]
+id = "011a_d-md-320"
+temperature_k = 320
+[[datasets."amoeba-4ocb".runs]]
+id = "018b_d-md-324"
+temperature_k = 324
+[[datasets."amoeba-4ocb".runs]]
+id = "019b_d-md-326"
+temperature_k = 326
+[[datasets."amoeba-4ocb".runs]]
+id = "013b_d-md-328"
+temperature_k = 328
+[[datasets."amoeba-4ocb".runs]]
+id = "015a_d-md-330"
+temperature_k = 330
+[[datasets."amoeba-4ocb".runs]]
+id = "016b_d-md-332"
+temperature_k = 332
+[[datasets."amoeba-4ocb".runs]]
+id = "017c_d-md-334"
+temperature_k = 334
+
+[datasets."amoeba-8cb"]
+molecule = "8cb"
+method = "AMOEBA/Tinker"
+raw_subdir = "tinker9-8cb-x1000-pt2.1"
+processed_subdir = "8cb/amoeba-pt2.1"
+trajectory = "8cb-x1000.arc"
+molecules = 1000
+atoms_per_molecule = 47
+frames = 1000
+temperatures_inferred = false
+
+[[datasets."amoeba-8cb".runs]]
+id = "007a_d-md-296"
+temperature_k = 296
+[[datasets."amoeba-8cb".runs]]
+id = "004c_d-md-300"
+temperature_k = 300
+[[datasets."amoeba-8cb".runs]]
+id = "008a_d-md-304"
+temperature_k = 304
+[[datasets."amoeba-8cb".runs]]
+id = "009a_d-md-308"
+temperature_k = 308
+[[datasets."amoeba-8cb".runs]]
+id = "010a_d-md-312"
+temperature_k = 312
+[[datasets."amoeba-8cb".runs]]
+id = "021a_d-md-316"
+temperature_k = 316
+[[datasets."amoeba-8cb".runs]]
+id = "011a_d-md-320"
+temperature_k = 320
+[[datasets."amoeba-8cb".runs]]
+id = "014a_d-md-322"
+temperature_k = 322
+[[datasets."amoeba-8cb".runs]]
+id = "018a_d-md-324"
+temperature_k = 324
+[[datasets."amoeba-8cb".runs]]
+id = "015a_d-md-326"
+temperature_k = 326
+[[datasets."amoeba-8cb".runs]]
+id = "012a_d-md-328"
+temperature_k = 328
+[[datasets."amoeba-8cb".runs]]
+id = "023b_d-md-330"
+temperature_k = 330
+[[datasets."amoeba-8cb".runs]]
+id = "016a_d-md-332"
+temperature_k = 332
+[[datasets."amoeba-8cb".runs]]
+id = "022a_d-md-334"
+temperature_k = 334
+[[datasets."amoeba-8cb".runs]]
+id = "013a_d-md-336"
+temperature_k = 336
+[[datasets."amoeba-8cb".runs]]
+id = "017a_d-md-338"
+temperature_k = 338
+[[datasets."amoeba-8cb".runs]]
+id = "019a_d-md-340"
+temperature_k = 340
+[[datasets."amoeba-8cb".runs]]
+id = "020a_d-md-342"
+temperature_k = 342

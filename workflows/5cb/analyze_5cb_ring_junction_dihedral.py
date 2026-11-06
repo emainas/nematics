@@ -25,16 +25,19 @@ os.environ.setdefault("MPLBACKEND", "Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from nematics.datasets import get_dataset  # noqa: E402
 from nematics.gro import read_gro_frame  # noqa: E402
 
 
 NMOLECULES = 1000
 ATOMS_PER_MOLECULE = 38
 DIHEDRAL = (8, 10, 15, 16)  # one-based: C09-C10-C14-C15
-GAFF_RUNS = (("gro", 356.0), ("gro2", 366.0), ("gro3", 376.0), ("gro4", 386.0))
+GAFF_5CB = get_dataset("gaff-5cb")
+AMOEBA_5CB = get_dataset("amoeba-5cb")
+GAFF_RUNS = tuple((run.id, run.temperature_k) for run in GAFF_5CB.runs)
 R_KCAL = 0.00198720425864083
 
 
@@ -318,12 +321,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--amoeba-root",
         type=Path,
-        default=Path("/hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7"),
+        default=AMOEBA_5CB.raw_path(),
     )
     parser.add_argument(
         "--gaff-root",
         type=Path,
-        default=Path("/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign"),
+        default=GAFF_5CB.raw_path(),
     )
     parser.add_argument(
         "--topology",
