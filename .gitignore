@@ -3,7 +3,7 @@ legacy_fortran_code/
 __pycache__/
 *.pyc
 src/nematics/_paircorr_fort*.so
-data/paircorr/
+data/
 reports
 legacy_fortran_code
 literature
