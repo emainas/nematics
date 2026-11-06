@@ -1,8 +1,8 @@
 # nematics
 
 Research analysis code for liquid-crystal molecular-dynamics trajectories.
-The current workflows cover 5CB monomers with GAFF and AMOEBA, plus CB7CB
-conformation and induced-chirality analysis.
+The current workflows cover 5CB monomers with GAFF and AMOEBA, 4OCB monomers
+with AMOEBA, and CB7CB conformation and induced-chirality analysis.
 
 ## Layout
 

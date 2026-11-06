@@ -1,0 +1,106 @@
+# VMD scene for the 4OCB C-C-O-C(ar) ether torsion, atoms 16-15-28-11.
+# Download this script and 4ocb_molecule_frame.pdb into the same directory,
+# then run: vmd -e view_4ocb_ether_dihedral.vmd
+
+set script_dir [file dirname [file normalize [info script]]]
+set repo_root [file dirname $script_dir]
+set local_pdb [file join $script_dir "4ocb_molecule_frame.pdb"]
+set repository_pdb [file join $repo_root "data-processed" "4ocb" "amoeba-pt2.2" \
+    "visualization" "4ocb_molecule_frame.pdb"]
+if {[file isfile $local_pdb]} {
+    set pdb_file $local_pdb
+} else {
+    set pdb_file $repository_pdb
+}
+if {![file isfile $pdb_file]} {
+    error "Place 4ocb_molecule_frame.pdb beside this VMD script"
+}
+
+set molid [mol new $pdb_file type pdb waitfor all]
+display projection Orthographic
+display depthcue off
+color Display Background white
+axes location Off
+
+mol delrep 0 $molid
+mol representation Licorice 0.12 14 14
+mol color ColorID 6
+mol material AOShiny
+mol selection all
+mol addrep $molid
+
+proc serial_xyz {molid serial} {
+    set sel [atomselect $molid "serial $serial"]
+    if {[$sel num] != 1} { error "Expected one atom with serial $serial" }
+    set xyz [lindex [$sel get {x y z}] 0]
+    $sel delete
+    return $xyz
+}
+proc serial_index {molid serial} {
+    set sel [atomselect $molid "serial $serial"]
+    if {[$sel num] != 1} { error "Expected one atom with serial $serial" }
+    set index [lindex [$sel get index] 0]
+    $sel delete
+    return $index
+}
+proc draw_bond {molid start end color radius} {
+    graphics $molid color $color
+    graphics $molid material AOShiny
+    graphics $molid cylinder $start $end radius $radius resolution 24 filled yes
+}
+proc draw_atom {molid point color} {
+    graphics $molid color $color
+    graphics $molid material AOShiny
+    graphics $molid sphere $point radius 0.31 resolution 24
+}
+
+# chi = local/PDB serials 16-15-28-11, centered on C14-O01 (15-28).
+set serials {16 15 28 11}
+lassign $serials sa sb sc sd
+set a [serial_xyz $molid $sa]
+set b [serial_xyz $molid $sb]
+set c [serial_xyz $molid $sc]
+set d [serial_xyz $molid $sd]
+
+graphics $molid color 3
+graphics $molid material Transparent
+graphics $molid triangle $a $b $c
+graphics $molid color 10
+graphics $molid material Transparent
+graphics $molid triangle $b $c $d
+
+draw_bond $molid $a $b 3 0.20
+draw_bond $molid $b $c 4 0.25
+draw_bond $molid $c $d 10 0.20
+draw_atom $molid $a 3
+draw_atom $molid $b 4
+draw_atom $molid $c 4
+draw_atom $molid $d 10
+
+set ia [serial_index $molid $sa]
+set ib [serial_index $molid $sb]
+set ic [serial_index $molid $sc]
+set id [serial_index $molid $sd]
+set signed [measure dihed [list $ia $ib $ic $id] molid $molid frame 0]
+set wrapped [expr {fmod($signed + 360.0, 360.0)}]
+
+graphics $molid color 16
+graphics $molid text [vecadd $a {-0.8 -0.8 0.3}] "C15 (atom 16)" size 1.0 thickness 2
+graphics $molid text [vecadd $b {-1.2 0.7 0.3}] "C14 (atom 15)" size 1.0 thickness 2
+graphics $molid text [vecadd $c {0.4 0.7 0.3}] "O01 (atom 28)" size 1.0 thickness 2
+graphics $molid text [vecadd $d {0.4 -0.8 0.3}] "C10(ipso; atom 11)" size 1.0 thickness 2
+
+set all_sel [atomselect $molid all]
+set center [measure center $all_sel]
+$all_sel delete
+graphics $molid text [vecadd $center {-7.0 4.0 0.0}] \
+    [format "chi(C15-C14-O01-C10) = %.1f deg" $wrapped] size 1.2 thickness 2
+graphics $molid text [vecadd $center {-7.0 2.9 0.0}] \
+    "yellow C14-O01: ether torsional hinge" size 0.95 thickness 2
+graphics $molid text [vecadd $center {-7.0 1.9 0.0}] \
+    "orange: butoxy plane; cyan: O-C(ar) plane" size 0.95 thickness 2
+
+display resetview
+puts "Loaded $pdb_file"
+puts [format "4OCB ether torsion 16-15-28-11: signed %.3f deg; wrapped %.3f deg" \
+    $signed $wrapped]
