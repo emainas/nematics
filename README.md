@@ -1,117 +1,37 @@
 # nematics
 
-Python translation of legacy Fortran analysis for 5CB Gromacs trajectories.
+Research analysis code for liquid-crystal molecular-dynamics trajectories.
+The current workflows cover 5CB monomers with GAFF and AMOEBA, plus CB7CB
+conformation and induced-chirality analysis.
 
-## Quick start
+## Layout
+
+- `src/nematics/`: reusable trajectory, order, susceptibility, and
+  pair-correlation code
+- `scripts/`: reproducible research workflows
+- `plotting/`: plotting utilities for legacy package outputs
+- `tests/`: automated checks
+- `data-processed/`: generated numerical products, ignored by Git
+- `reports/`: generated figures and reports, ignored by Git
+
+Raw trajectories remain external and read only. Generated files belong under
+`data-processed/<molecule>/<dataset>/<workflow>/`.
+
+## Setup
 
 ```bash
-# Create env (requires uv)
 uv venv .venv-nematics
 source .venv-nematics/bin/activate
-uv pip install -e .
+uv pip install -e ".[dev,viz]"
 ```
 
-Run on a single frame:
+Use command help for workflow options:
 
 ```bash
-nematics paf --gro-dir "<GRO_DIR>" --frame 0
+nematics --help
+python scripts/<workflow>.py --help
 ```
 
-Plot P(S) from saved order data:
-
-```bash
-uv pip install -e ".[viz]"
-python plotting/plot_ps.py
-```
-
-Compute and save S for all four trajectories:
-
-```bash
-nematics order --raw-root "<RAW_ROOT>" --out-dir "<ORDER_DIR>"
-```
-
-Recompute order with the `11-feb-2026` CN-dipole director (`ddir`) instead of the
-legacy molecular long axis (`molzax`):
-
-```bash
-nematics order --raw-root "<RAW_ROOT>" --axis ddir --out-dir "<ORDER_DIR>"
-```
-
-Compute the new `11-feb-2026` Fortran-style pair-correlation histograms for one trajectory:
-
-```bash
-# one-time build of fast Fortran backend
-nematics build-fortran
-
-nematics paircorr \
-  --gro-dir "<GRO_DIR>" \
-  --label "<RUN_LABEL>" \
-  --out-dir "<PAIRCORR_DIR>" \
-  --backend auto \
-  --save-every 0
-```
-
-`--backend auto` uses Fortran if available (falls back to Python).  
-Use `--backend fortran` to force compiled mode.
-
-Compute orientational susceptibility time series (from molecular orientation vectors):
-
-```bash
-nematics susceptibility \
-  --gro-dir "<GRO_DIR>" \
-  --nframes 1000 \
-  --axis molzax \
-  --out "data-processed/5cb/gaff-zalign/legacy-susceptibility/chi.npy"
-```
-
-Plot susceptibility time series and mean:
-
-```bash
-python plotting/plot_susceptibility.py \
-  --chi-file "data-processed/5cb/gaff-zalign/legacy-susceptibility/chi.npy" \
-  --out "reports/susceptibility_timeseries.png"
-```
-
-For isotropic-phase analysis (typically `gro4`), plot the histogram of the largest
-eigenvalue `S` with CLT and LDT overlays:
-
-```bash
-python plotting/plot_s_isotropic_theory.py \
-  --s-file data-processed/5cb/gaff-zalign/legacy-order/gro_4_S.npy \
-  --chi-file data-processed/5cb/gaff-zalign/legacy-susceptibility/gro_4_chi.npy \
-  --num-particles 1000 \
-  --out "reports/s_isotropic_theory.png"
-```
-
-Theory reference for CLT/LDT overlay:
-
-Mainas, E., & Stratt, R. M. *Exceptionally large fluctuations in orientational order: The lessons of large-deviation theory for liquid crystalline systems.* Journal of Chemical Physics, 162, 024501 (2025).
-
-The generated `.dat` files include:
-- `*_5CB_par_1.0.dat`, `*_5CB_par_2.0.dat`, `*_5CB_par_3.0.dat`, `*_5CB_par_all.dat`, `*_5CB_per.dat`, `*_5CB_rad.dat`
-- `*_CN_par_1.0.dat`, `*_CN_par_2.0.dat`, `*_CN_par_3.0.dat`, `*_CN_par_all.dat`, `*_CN_per.dat`, `*_CN_rad.dat`
-
-If you want to disable progress output:
-
-```bash
-python plotting/plot_ps.py --no-progress
-```
-
-To reproduce the current report figures from saved order arrays:
-
-```bash
-python plotting/plot_ps.py --order-dir "<ORDER_DIR>"
-```
-
-To generate pair-correlation analysis figures from `<PAIRCORR_DIR>/*.dat`:
-
-```bash
-python plotting/plot_paircorr.py --paircorr-dir "<PAIRCORR_DIR>" --out-dir "<REPORT_DIR>"
-```
-
-Example values in this repo:
-- `<RAW_ROOT>`: `/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign`
-- `<GRO_DIR>`: `/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign/gro`
-- `<ORDER_DIR>`: `data-processed/5cb/gaff-zalign/legacy-order`
-- `<PAIRCORR_DIR>`: `data-processed/5cb/gaff-zalign/legacy-paircorr`
-- `<REPORT_DIR>`: `reports/paircorr`
+AMOEBA workflows generally require AmberTools `cpptraj`. The optional compiled
+pair-correlation backend requires `gfortran` and can be built with
+`nematics build-fortran`.
