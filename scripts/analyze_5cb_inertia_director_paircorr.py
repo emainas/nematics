@@ -243,12 +243,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--amoeba-end-pair-root",
         type=Path,
-        default=Path("data/amoeba_5cb_director_paircorr"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/director-paircorr-end-to-end"),
     )
     parser.add_argument(
         "--amoeba-inertia-order-root",
         type=Path,
-        default=Path("data/amoeba_5cb_inertia_order"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/inertia-order"),
     )
     parser.add_argument(
         "--gaff-source-root",
@@ -258,10 +258,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--gaff-end-pair-root",
         type=Path,
-        default=Path("data/gaff_5cb_director_paircorr"),
+        default=Path("data-processed/5cb/gaff-zalign/director-paircorr-end-to-end"),
     )
     parser.add_argument(
-        "--out-data", type=Path, default=Path("data/5cb_inertia_director_paircorr")
+        "--out-data", type=Path, default=Path("data-processed/5cb/comparisons/inertia-director-paircorr")
     )
     parser.add_argument("--parallel-max-nm", type=float, default=5.0)
     parser.add_argument("--perpendicular-max-nm", type=float, default=5.0)
@@ -336,11 +336,11 @@ def main() -> None:
         "the molecular axis, director, and pair weight use one consistent "
         "definition.\n\n"
         "AMOEBA reuses the cpptraj principal-z vectors under "
-        "`data/amoeba_5cb_inertia_order/` and the previously saved cpptraj COMs "
+        "`data-processed/5cb/amoeba-pt2.7/inertia-order/` and the previously saved cpptraj COMs "
         "and boxes. GAFF axes are diagonalized directly from mass-weighted "
         "inertia tensors after minimum-image molecular reconstruction from each "
         "read-only GRO snapshot, then saved here. GAFF COMs and boxes are reused "
-        "from `data/gaff_5cb_director_paircorr/`.\n\n"
+        "from `data-processed/5cb/gaff-zalign/director-paircorr-end-to-end/`.\n\n"
         "The binning, normalization, PBC images, parallel R0=1,2,3 nm cylinders, "
         f"and perpendicular `|r dot n(t)| < {args.slab_halfwidth_nm:g} nm` slab "
         "match the end-to-end workflow. No KDE or smoothing is used.\n"

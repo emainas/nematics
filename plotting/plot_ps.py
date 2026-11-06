@@ -34,6 +34,9 @@ def plot_avg_s_vs_temperature(
     # Map file stems to temperatures (K)
     temp_map = {
         "gro_S": 356.0,
+        "gro2_S": 366.0,
+        "gro3_S": 376.0,
+        "gro4_S": 386.0,
         "gro_2_S": 366.0,
         "gro_3_S": 376.0,
         "gro_4_S": 386.0,
@@ -83,7 +86,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--order-dir",
-        default="data/order",
+        default="data-processed/5cb/gaff-zalign/legacy-order",
         help="Directory containing saved S .npy files",
     )
     parser.add_argument(
@@ -133,6 +136,9 @@ def main() -> int:
 
     color_map = {
         "gro_S": ("356K", "blue"),
+        "gro2_S": ("366K", "red"),
+        "gro3_S": ("376K", "green"),
+        "gro4_S": ("386K", "magenta"),
         "gro_2_S": ("366K", "red"),
         "gro_3_S": ("376K", "green"),
         "gro_4_S": ("386K", "magenta"),

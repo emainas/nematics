@@ -52,13 +52,15 @@ def main() -> int:
         "order", help="Compute and save S for all trajectories"
     )
     order_parser.add_argument(
+        "--raw-root",
         "--data-root",
-        default="data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign",
-        help="Root directory containing gro, gro 2, gro 3, gro 4",
+        dest="data_root",
+        default="/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign",
+        help="Read-only source root containing gro, gro2, gro3, and gro4",
     )
     order_parser.add_argument(
         "--out-dir",
-        default="data/order",
+        default="data-processed/5cb/gaff-zalign/legacy-order",
         help="Output directory for .npy files",
     )
     order_parser.add_argument(
@@ -96,7 +98,7 @@ def main() -> int:
     )
     susc_parser.add_argument(
         "--out",
-        default="data/susceptibility/chi.npy",
+        default="data-processed/5cb/gaff-zalign/legacy-susceptibility/chi.npy",
         help="Output .npy path for susceptibility timeseries",
     )
     susc_parser.add_argument(
@@ -140,7 +142,7 @@ def main() -> int:
     )
     paircorr_parser.add_argument(
         "--out-dir",
-        default="data/paircorr",
+        default="data-processed/5cb/gaff-zalign/legacy-paircorr",
         help="Output directory for .dat histogram files",
     )
     paircorr_parser.add_argument(

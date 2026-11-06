@@ -27,17 +27,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--end-to-end-data",
         type=Path,
-        default=Path("data/amoeba_5cb_end_to_end_order"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order"),
     )
     parser.add_argument(
         "--inertia-data",
         type=Path,
-        default=Path("data/amoeba_5cb_inertia_order"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/inertia-order"),
     )
     parser.add_argument(
         "--out-data",
         type=Path,
-        default=Path("data/amoeba_5cb_inertia_order/p_of_s"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/inertia-order/p_of_s"),
     )
     parser.add_argument(
         "--out",

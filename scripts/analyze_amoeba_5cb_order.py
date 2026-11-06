@@ -447,7 +447,7 @@ def make_plot(rows: list[dict[str, float | int | str]], path: Path) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-root", type=Path, required=True)
+    parser.add_argument("--raw-root", "--data-root", dest="data_root", type=Path, required=True)
     parser.add_argument("--out-data", type=Path, required=True)
     parser.add_argument("--out-plot", type=Path, required=True)
     parser.add_argument("--cpptraj", default="cpptraj")

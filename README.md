@@ -27,14 +27,14 @@ python plotting/plot_ps.py
 Compute and save S for all four trajectories:
 
 ```bash
-nematics order --data-root "<DATA_ROOT>" --out-dir "<ORDER_DIR>"
+nematics order --raw-root "<RAW_ROOT>" --out-dir "<ORDER_DIR>"
 ```
 
 Recompute order with the `11-feb-2026` CN-dipole director (`ddir`) instead of the
 legacy molecular long axis (`molzax`):
 
 ```bash
-nematics order --data-root "<DATA_ROOT>" --axis ddir --out-dir "<ORDER_DIR>"
+nematics order --raw-root "<RAW_ROOT>" --axis ddir --out-dir "<ORDER_DIR>"
 ```
 
 Compute the new `11-feb-2026` Fortran-style pair-correlation histograms for one trajectory:
@@ -61,24 +61,24 @@ nematics susceptibility \
   --gro-dir "<GRO_DIR>" \
   --nframes 1000 \
   --axis molzax \
-  --out "data/susceptibility/chi.npy"
+  --out "data-processed/5cb/gaff-zalign/legacy-susceptibility/chi.npy"
 ```
 
 Plot susceptibility time series and mean:
 
 ```bash
 python plotting/plot_susceptibility.py \
-  --chi-file "data/susceptibility/chi.npy" \
+  --chi-file "data-processed/5cb/gaff-zalign/legacy-susceptibility/chi.npy" \
   --out "reports/susceptibility_timeseries.png"
 ```
 
-For isotropic-phase analysis (typically `gro 4`), plot the histogram of the largest
+For isotropic-phase analysis (typically `gro4`), plot the histogram of the largest
 eigenvalue `S` with CLT and LDT overlays:
 
 ```bash
 python plotting/plot_s_isotropic_theory.py \
-  --s-file data/order/gro_4_S.npy \
-  --chi-file data/susceptibility/gro_4_chi.npy \
+  --s-file data-processed/5cb/gaff-zalign/legacy-order/gro_4_S.npy \
+  --chi-file data-processed/5cb/gaff-zalign/legacy-susceptibility/gro_4_chi.npy \
   --num-particles 1000 \
   --out "reports/s_isotropic_theory.png"
 ```
@@ -110,8 +110,8 @@ python plotting/plot_paircorr.py --paircorr-dir "<PAIRCORR_DIR>" --out-dir "<REP
 ```
 
 Example values in this repo:
-- `<DATA_ROOT>`: `data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign`
-- `<GRO_DIR>`: `data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro`
-- `<ORDER_DIR>`: `data/order`
-- `<PAIRCORR_DIR>`: `data/paircorr`
+- `<RAW_ROOT>`: `/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign`
+- `<GRO_DIR>`: `/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign/gro`
+- `<ORDER_DIR>`: `data-processed/5cb/gaff-zalign/legacy-order`
+- `<PAIRCORR_DIR>`: `data-processed/5cb/gaff-zalign/legacy-paircorr`
 - `<REPORT_DIR>`: `reports/paircorr`

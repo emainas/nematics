@@ -4,7 +4,7 @@
 The external GRO snapshots are read only.  Molecular orientation is the
 minimum-image C18(local atom 19)->N01(local atom 4) end-to-end unit vector.
 The framewise largest-eigenvalue eigenvector of its Q tensor is the director.
-Generated geometry caches and correlation tables are written under data/.
+Generated geometry caches and correlation tables are written under data-processed/.
 """
 
 from __future__ import annotations
@@ -188,10 +188,10 @@ def parse_args() -> argparse.Namespace:
         default=Path("/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign"),
     )
     parser.add_argument(
-        "--out-data", type=Path, default=Path("data/gaff_5cb_director_paircorr")
+        "--out-data", type=Path, default=Path("data-processed/5cb/gaff-zalign/director-paircorr-end-to-end")
     )
     parser.add_argument(
-        "--order-root", type=Path, default=Path("data/5cb_end_to_end_order")
+        "--order-root", type=Path, default=Path("data-processed/5cb/gaff-zalign/end-to-end-order")
     )
     parser.add_argument("--nframes", type=int)
     parser.add_argument("--parallel-max-nm", type=float, default=5.0)

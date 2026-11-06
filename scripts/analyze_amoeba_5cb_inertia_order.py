@@ -330,22 +330,24 @@ def write_readme(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        "--raw-root",
         "--data-root",
+        dest="data_root",
         type=Path,
         default=Path("/hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7"),
     )
     parser.add_argument(
         "--topology",
         type=Path,
-        default=Path("data/amoeba_5cb_end_to_end_order/topology/5cb-x1000-first-frame.pdb"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order/topology/5cb-x1000-first-frame.pdb"),
     )
     parser.add_argument(
         "--end-to-end-summary",
         type=Path,
-        default=Path("data/amoeba_5cb_end_to_end_order/summary.csv"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order/summary.csv"),
     )
     parser.add_argument(
-        "--out-data", type=Path, default=Path("data/amoeba_5cb_inertia_order")
+        "--out-data", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/inertia-order")
     )
     parser.add_argument(
         "--out-plot",

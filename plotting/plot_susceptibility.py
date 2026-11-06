@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -10,6 +11,9 @@ import matplotlib
 # Non-interactive backend for scripts
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from nematics.susceptibility import compute_susceptibility_timeseries, save_susceptibility_timeseries
 

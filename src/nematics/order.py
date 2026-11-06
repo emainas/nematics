@@ -17,9 +17,9 @@ except Exception:  # pragma: no cover - fallback if tqdm missing
 def _default_gro_dirs(data_root: Path) -> list[Path]:
     return [
         data_root / "gro",
-        data_root / "gro 2",
-        data_root / "gro 3",
-        data_root / "gro 4",
+        data_root / "gro2",
+        data_root / "gro3",
+        data_root / "gro4",
     ]
 
 
@@ -55,8 +55,8 @@ def compute_order_for_dir(
 
 
 def compute_and_save_order(
-    data_root: str | Path = "data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign",
-    out_dir: str | Path = "data/order",
+    data_root: str | Path = "/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign",
+    out_dir: str | Path = "data-processed/5cb/gaff-zalign/legacy-order",
     nframes: int = 1000,
     natoms_per_mol: int = 38,
     show_progress: bool = True,

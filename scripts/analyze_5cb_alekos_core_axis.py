@@ -432,10 +432,10 @@ def value_map(rows: list[dict[str, str]], value: str) -> dict[float, tuple[float
 
 
 def plot_order(core_rows: list[dict[str, str]], output: Path) -> None:
-    amoeba_end = value_map(read_csv(Path("data/amoeba_5cb_end_to_end_order/summary.csv")), "mean_S")
-    amoeba_inertia = value_map(read_csv(Path("data/amoeba_5cb_inertia_order/summary.csv")), "mean_S")
-    gaff_end = value_map(read_csv(Path("data/5cb_end_to_end_order/summary.csv")), "mean_S")
-    inertia_all = read_csv(Path("data/5cb_inertia_director_paircorr/summary.csv"))
+    amoeba_end = value_map(read_csv(Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order/summary.csv")), "mean_S")
+    amoeba_inertia = value_map(read_csv(Path("data-processed/5cb/amoeba-pt2.7/inertia-order/summary.csv")), "mean_S")
+    gaff_end = value_map(read_csv(Path("data-processed/5cb/gaff-zalign/end-to-end-order/summary.csv")), "mean_S")
+    inertia_all = read_csv(Path("data-processed/5cb/comparisons/inertia-director-paircorr/summary.csv"))
     gaff_inertia = {
         float(row["temperature_K"]): (float(row["mean_S_inertia"]), 0.0)
         for row in inertia_all
@@ -492,8 +492,8 @@ def end_result(force_field: str, run: str, rank: int, filename: str) -> dict[str
     if rank == 1:
         from analyze_5cb_g1_director_paircorr import read_g1
 
-        return read_g1(Path("data/5cb_g1_director_paircorr") / force_field.lower() / run / filename)
-    root = Path("data/amoeba_5cb_director_paircorr") if force_field == "AMOEBA" else Path("data/gaff_5cb_director_paircorr")
+        return read_g1(Path("data-processed/5cb/comparisons/g1-director-paircorr") / force_field.lower() / run / filename)
+    root = Path("data-processed/5cb/amoeba-pt2.7/director-paircorr-end-to-end") if force_field == "AMOEBA" else Path("data-processed/5cb/gaff-zalign/director-paircorr-end-to-end")
     return read_result(root / run / filename)
 
 
@@ -517,8 +517,8 @@ def plot_pair_panels(
     fig, axes = plt.subplots(4, 4, figsize=(13.5, 10.8), sharex=True, sharey=True, constrained_layout=True)
     parallel_colors = {1.0: "#7b2cbf", 2.0: "#00a878", 3.0: "#0096c7"}
     cmap = plt.get_cmap("turbo", len(amoeba))
-    alekos_parallel = read_csv_records(Path("data/5cb_report_reproduction/alekos_data/alekos_page5_global_parallel.csv"))
-    alekos_perp = read_csv_records(Path("data/5cb_report_reproduction/alekos_data/alekos_page7_perpendicular.csv"))
+    alekos_parallel = read_csv_records(Path("data-processed/5cb/legacy/report-reproduction/alekos_data/alekos_page5_global_parallel.csv"))
+    alekos_perp = read_csv_records(Path("data-processed/5cb/legacy/report-reproduction/alekos_data/alekos_page7_perpendicular.csv"))
     all_values: list[np.ndarray] = []
 
     for panel, row in enumerate(amoeba + gaff):
@@ -556,7 +556,7 @@ def plot_pair_panels(
 
             if rank == 2:
                 inertia = read_result(
-                    Path("data/5cb_inertia_director_paircorr")
+                    Path("data-processed/5cb/comparisons/inertia-director-paircorr")
                     / force_field.lower()
                     / run
                     / filename
@@ -660,10 +660,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--amoeba-root", type=Path, default=Path("/hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7"))
     parser.add_argument("--gaff-root", type=Path, default=Path("/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign"))
-    parser.add_argument("--topology", type=Path, default=Path("data/amoeba_5cb_end_to_end_order/topology/5cb-x1000-first-frame.pdb"))
-    parser.add_argument("--amoeba-geometry-root", type=Path, default=Path("data/amoeba_5cb_director_paircorr"))
-    parser.add_argument("--gaff-geometry-root", type=Path, default=Path("data/gaff_5cb_director_paircorr"))
-    parser.add_argument("--out-data", type=Path, default=Path("data/5cb_alekos_core_axis"))
+    parser.add_argument("--topology", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order/topology/5cb-x1000-first-frame.pdb"))
+    parser.add_argument("--amoeba-geometry-root", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/director-paircorr-end-to-end"))
+    parser.add_argument("--gaff-geometry-root", type=Path, default=Path("data-processed/5cb/gaff-zalign/director-paircorr-end-to-end"))
+    parser.add_argument("--out-data", type=Path, default=Path("data-processed/5cb/comparisons/alekos-core-axis"))
     parser.add_argument("--out-report", type=Path, default=Path("reports/5cb_alekos_core_axis"))
     parser.add_argument("--cpptraj", default="/nas/sycamore/apps/amber/26/ambertools26/bin/cpptraj")
     parser.add_argument("--nframes", type=int, default=1000)
@@ -684,7 +684,7 @@ def main() -> None:
     report = args.out_report.resolve()
     output.mkdir(parents=True, exist_ok=True)
     report.mkdir(parents=True, exist_ok=True)
-    amoeba_rows = read_csv(Path("data/amoeba_5cb_end_to_end_order/summary.csv"))
+    amoeba_rows = read_csv(Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order/summary.csv"))
     amoeba_rows.sort(key=lambda row: float(row["temperature_K"]))
 
     rows: list[dict[str, str | int | float]] = []

@@ -162,9 +162,9 @@ def _plot_cn_dipole_radial_report_style(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Plot pair-correlation analysis figures from data/paircorr/*.dat"
+        description="Plot pair-correlation analysis figures from data-processed/5cb/gaff-zalign/legacy-paircorr/*.dat"
     )
-    parser.add_argument("--paircorr-dir", default="data/paircorr", help="Directory with paircorr .dat files")
+    parser.add_argument("--paircorr-dir", default="data-processed/5cb/gaff-zalign/legacy-paircorr", help="Directory with paircorr .dat files")
     parser.add_argument("--out-dir", default="reports/paircorr", help="Output directory for generated figures")
     args = parser.parse_args()
 

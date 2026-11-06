@@ -233,16 +233,18 @@ def make_plot(rows: list[dict[str, float | int | str]], output: Path) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        "--raw-root",
         "--data-root",
+        dest="data_root",
         type=Path,
         default=Path("/hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7"),
     )
     parser.add_argument(
         "--topology",
         type=Path,
-        default=Path("data/amoeba_5cb_end_to_end_order/topology/5cb-x1000-first-frame.pdb"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order/topology/5cb-x1000-first-frame.pdb"),
     )
-    parser.add_argument("--out-data", type=Path, default=Path("data/amoeba_5cb_com_rdf"))
+    parser.add_argument("--out-data", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/com-rdf"))
     parser.add_argument(
         "--out-plot",
         type=Path,

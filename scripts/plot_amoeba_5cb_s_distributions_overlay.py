@@ -20,13 +20,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--data-dir",
         type=Path,
-        default=Path("data/amoeba_5cb_end_to_end_order"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order"),
     )
     parser.add_argument(
         "--out-data",
         type=Path,
         default=Path(
-            "data/amoeba_5cb_end_to_end_order/p_of_s/p_of_s_histogram.csv"
+            "data-processed/5cb/amoeba-pt2.7/end-to-end-order/p_of_s/p_of_s_histogram.csv"
         ),
     )
     parser.add_argument(

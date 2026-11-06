@@ -19,7 +19,7 @@ def test_make_end_to_end_axes_with_periodic_boundary():
 
 
 def test_read_and_paf_frame0():
-    gro_dir = Path("data/Poon, Chi-Duen - 5cb-x1000-gaff-88x88x94-zalign/gro")
+    gro_dir = Path("/hickory/proj/cdpoonlab/users/emainas/5cb-x1000-gaff-88x88x94-zalign/gro")
     frame = read_gro_frame(gro_dir / "frame0.gro", natoms_per_mol=38)
 
     assert frame.positions.shape == (1000, 38, 3)

@@ -328,10 +328,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--topology",
         type=Path,
-        default=Path("data/amoeba_5cb_end_to_end_order/topology/5cb-x1000-first-frame.pdb"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order/topology/5cb-x1000-first-frame.pdb"),
     )
     parser.add_argument(
-        "--out-data", type=Path, default=Path("data/5cb_ring_junction_dihedral")
+        "--out-data", type=Path, default=Path("data-processed/5cb/comparisons/ring-junction-dihedral")
     )
     parser.add_argument(
         "--out-report", type=Path, default=Path("reports/5cb_ring_junction_dihedral")

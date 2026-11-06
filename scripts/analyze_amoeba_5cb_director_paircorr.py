@@ -750,20 +750,22 @@ def write_summary(rows: list[dict[str, float | int | str]], path: Path) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        "--raw-root",
         "--data-root",
+        dest="data_root",
         type=Path,
         default=Path("/hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7"),
     )
     parser.add_argument(
         "--topology",
         type=Path,
-        default=Path("data/amoeba_5cb_end_to_end_order/topology/5cb-x1000-first-frame.pdb"),
+        default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order/topology/5cb-x1000-first-frame.pdb"),
     )
     parser.add_argument(
-        "--vector-root", type=Path, default=Path("data/amoeba_5cb_end_to_end_order")
+        "--vector-root", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order")
     )
     parser.add_argument(
-        "--out-data", type=Path, default=Path("data/amoeba_5cb_director_paircorr")
+        "--out-data", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/director-paircorr-end-to-end")
     )
     parser.add_argument(
         "--out-report", type=Path, default=Path("reports/amoeba_5cb_director_paircorr")
@@ -771,17 +773,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--alekos-data-root",
         type=Path,
-        default=Path("data/5cb_report_reproduction/alekos_data"),
+        default=Path("data-processed/5cb/legacy/report-reproduction/alekos_data"),
     )
     parser.add_argument(
         "--gaff-data-root",
         type=Path,
-        default=Path("data/gaff_5cb_director_paircorr"),
+        default=Path("data-processed/5cb/gaff-zalign/director-paircorr-end-to-end"),
     )
     parser.add_argument(
         "--inertia-data-root",
         type=Path,
-        default=Path("data/5cb_inertia_director_paircorr"),
+        default=Path("data-processed/5cb/comparisons/inertia-director-paircorr"),
     )
     parser.add_argument("--cpptraj", default="cpptraj")
     parser.add_argument("--start", type=int, default=1)
@@ -907,7 +909,7 @@ def main() -> None:
         "onto negative z using the nematic symmetry `g(+z)=g(-z)`; no negative-z "
         "samples are recalculated.\n"
         "\nThe six comparison figures also include the digitized Alekos report "
-        "curves from `data/5cb_report_reproduction/alekos_data/`. The final four "
+        "curves from `data-processed/5cb/legacy/report-reproduction/alekos_data/`. The final four "
         "panels overlay solid lines computed from the GAFF GRO series (`gro`, "
         "`gro2`, `gro3`, and `gro4`) at the inferred temperatures 356, 366, 376, "
         "and 386 K with the report data drawn as thick circles. Report `g0` and "
@@ -919,10 +921,10 @@ def main() -> None:
         "introduced in this comparison. The AMOEBA curves specifically use the "
         "C18-to-N01 end-to-end definition for both Q and P2. The GAFF lines use "
         "the same axis and framewise-Q definition; their numerical tables and "
-        "provenance are in `data/gaff_5cb_director_paircorr/`. Small x markers "
+        "provenance are in `data-processed/5cb/gaff-zalign/director-paircorr-end-to-end/`. Small x markers "
         "show the corresponding calculation using each molecule's smallest-moment "
         "inertia eigenvector consistently for both the framewise Q director and "
-        "pair P2. Those tables are in `data/5cb_inertia_director_paircorr/`.\n"
+        "pair P2. Those tables are in `data-processed/5cb/comparisons/inertia-director-paircorr/`.\n"
     )
     print(f"Wrote {out_data / 'summary.csv'}")
     print(f"Wrote plots beneath {out_report}")

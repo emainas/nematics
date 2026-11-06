@@ -482,18 +482,18 @@ def plot_perpendicular(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--amoeba-geometry-root", type=Path, default=Path("data/amoeba_5cb_director_paircorr")
+        "--amoeba-geometry-root", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/director-paircorr-end-to-end")
     )
     parser.add_argument(
-        "--amoeba-vector-root", type=Path, default=Path("data/amoeba_5cb_end_to_end_order")
+        "--amoeba-vector-root", type=Path, default=Path("data-processed/5cb/amoeba-pt2.7/end-to-end-order")
     )
     parser.add_argument(
-        "--gaff-geometry-root", type=Path, default=Path("data/gaff_5cb_director_paircorr")
+        "--gaff-geometry-root", type=Path, default=Path("data-processed/5cb/gaff-zalign/director-paircorr-end-to-end")
     )
     parser.add_argument(
-        "--alekos-root", type=Path, default=Path("data/5cb_report_reproduction/alekos_data")
+        "--alekos-root", type=Path, default=Path("data-processed/5cb/legacy/report-reproduction/alekos_data")
     )
-    parser.add_argument("--out-data", type=Path, default=Path("data/5cb_g1_director_paircorr"))
+    parser.add_argument("--out-data", type=Path, default=Path("data-processed/5cb/comparisons/g1-director-paircorr"))
     parser.add_argument("--out-report", type=Path, default=Path("reports/5cb_g1_director_paircorr"))
     parser.add_argument("--parallel-max-nm", type=float, default=5.0)
     parser.add_argument("--perpendicular-max-nm", type=float, default=5.0)
