@@ -22,6 +22,41 @@ def unitvec(v: np.ndarray) -> np.ndarray:
     return v / norm
 
 
+def make_end_to_end_axes(
+    positions: np.ndarray,
+    start_atom: int,
+    end_atom: int,
+    box: np.ndarray | None = None,
+) -> np.ndarray:
+    """Return one unit end-to-end vector per molecule.
+
+    Parameters
+    ----------
+    positions
+        Coordinates with shape ``(nmolecules, natoms_per_molecule, 3)``.
+    start_atom, end_atom
+        Zero-based local atom indices.  The returned vector points from
+        ``start_atom`` to ``end_atom``.  Its sign does not affect a second-rank
+        nematic order tensor.
+    box
+        Optional orthorhombic box lengths.  When supplied, the endpoint
+        displacement is reduced using the minimum-image convention.
+    """
+    if positions.ndim != 3 or positions.shape[2] != 3:
+        raise ValueError("positions must have shape (nmolecules, natoms, 3)")
+    natoms = positions.shape[1]
+    if not (0 <= start_atom < natoms and 0 <= end_atom < natoms):
+        raise IndexError("end-to-end atom index lies outside the molecule")
+
+    displacement = positions[:, end_atom, :] - positions[:, start_atom, :]
+    if box is not None:
+        box = np.asarray(box, dtype=float)
+        if box.shape != (3,) or np.any(box <= 0.0):
+            raise ValueError("box must contain three positive orthorhombic lengths")
+        displacement = displacement - box * np.rint(displacement / box)
+    return unitvec(displacement)
+
+
 def make_molecular_axes(positions: np.ndarray) -> MolecularAxes:
     """Replicate MakeAlldirsOfSnap from the 11-feb-2026 Fortran code.
 

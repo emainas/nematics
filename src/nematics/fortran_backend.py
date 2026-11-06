@@ -33,6 +33,8 @@ def build_paircorr_fortran(verbose: bool = True) -> Path:
             "-m",
             "numpy.f2py",
             "-c",
+            "--backend",
+            "meson",
             str(src),
             "-m",
             "_paircorr_fort",
