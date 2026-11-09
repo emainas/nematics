@@ -8,6 +8,7 @@ import numpy as np
 from .datasets import dataset_names, get_dataset, get_project_paths
 from .fortran_backend import build_paircorr_fortran
 from .gro import read_gro_frame
+from .molecular_axis import prepare_molecular_axis_job, submit_molecular_axis_job
 from .order import compute_and_save_order
 from .paf import compute_global_paf, make_molecular_axes
 from .paircorr import compute_paircorr_for_dir, save_paircorr_results
@@ -211,6 +212,20 @@ def main() -> int:
         help="Reduce build output",
     )
 
+    molecular_axis_parser = subparsers.add_parser(
+        "molecular-axis",
+        help="Prepare or submit a YAML-defined Fortran molecular-axis extraction",
+    )
+    molecular_axis_parser.add_argument(
+        "config",
+        help="Path to the molecular-axis YAML configuration",
+    )
+    molecular_axis_parser.add_argument(
+        "--submit",
+        action="store_true",
+        help="Submit the generated job with sbatch (preparation alone never submits)",
+    )
+
     args = parser.parse_args()
 
     if args.command == "datasets":
@@ -307,6 +322,17 @@ def main() -> int:
     if args.command == "build-fortran":
         built = build_paircorr_fortran(verbose=not args.quiet)
         print(f"Built {built}")
+        return 0
+
+    if args.command == "molecular-axis":
+        job = prepare_molecular_axis_job(args.config)
+        print(f"Wrote {job.namelist_path}")
+        print(f"Wrote {job.slurm_script_path}")
+        print(f"Planned output: {job.config.output_path}")
+        if args.submit:
+            print(submit_molecular_axis_job(job))
+        else:
+            print("Not submitted. Re-run with --submit after reviewing the files above.")
         return 0
 
     raise SystemExit("Unknown command")

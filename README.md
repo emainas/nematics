@@ -8,7 +8,7 @@ with AMOEBA, and CB7CB conformation and induced-chirality analysis.
 
 - `src/nematics/`: reusable trajectory, order, susceptibility, and
   pair-correlation code
-- `config/datasets.toml`: source-run and processed-layout registry
+- `config/`: dataset registry plus workflow YAML files mirroring processed paths
 - `workflows/`: analysis programs grouped by molecular system
 - `tools/`: trajectory-conversion and VMD utilities
 - `tests/`: automated checks
@@ -37,3 +37,6 @@ python workflows/<system>/<workflow>.py --help
 AMOEBA workflows generally require AmberTools `cpptraj`. The optional compiled
 pair-correlation backend requires `gfortran` and can be built with
 `nematics build-fortran`.
+
+The YAML/Slurm-driven standalone Fortran molecular-axis extractor is described
+in `workflows/molecular-axis/README.md`.
