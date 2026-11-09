@@ -1,0 +1,23 @@
+version: 1
+system:
+  molecule: 5cb
+  dataset: amoeba-pt2.7
+  run_id: 013d_d-md-312
+  temperature_k: 312
+input:
+  path: data-processed/5cb/amoeba-pt2.7/013d_d-md-312/molecular-axis/molecular-axis.bin
+output:
+  path: data-processed/5cb/amoeba-pt2.7/013d_d-md-312/nematic-order/nematic-order.bin
+  overwrite: false
+slurm:
+  partition: general_big
+  account: rc_elipieri_pi
+  time: 00:10:00
+  memory: 512M
+  cpus_per_task: 1
+  job_name: order-5cb-312
+  modules: []
+fortran:
+  compiler: gfortran
+  flags: [-O3, -std=f2008]
+

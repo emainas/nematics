@@ -31,7 +31,6 @@ def _write_config(tmp_path: Path, trajectory: Path, output: Path) -> Path:
             "normalize": True,
         },
         "output": {"path": str(output), "overwrite": False},
-        "execution": {"mode": "slurm"},
         "slurm": {
             "partition": "general",
             "time": "00:10:00",
@@ -93,5 +92,50 @@ def test_prepare_writes_namelist_and_slurm_without_submission(
     assert "end_atom = 3" in namelist
     assert "#SBATCH --partition=general" in script
     assert "srun" in script
+    assert "performance.csv.partial" in script
+    assert "reproduce.yaml.partial" in script
     assert "sbatch" not in script
     assert not output.exists()
+
+
+def test_local_run_compiles_and_promotes_partial_outputs(
+    monkeypatch, tmp_path: Path
+) -> None:
+    repo = tmp_path / "repo"
+    processed = repo / "data-processed"
+    source = repo / "src" / "nematics" / "_molecular_axis.f90"
+    source.parent.mkdir(parents=True)
+    source.write_text("program placeholder\nend program\n", encoding="utf-8")
+    processed.mkdir(parents=True)
+    trajectory = tmp_path / "trajectory.arc"
+    trajectory.write_text("", encoding="utf-8")
+    output = processed / "test" / "axis.bin"
+    config_path = _write_config(tmp_path, trajectory, output)
+    monkeypatch.setattr(molecular_axis, "_repo_root", lambda: repo)
+    job = molecular_axis.prepare_molecular_axis_job(config_path)
+    monkeypatch.setattr(molecular_axis.shutil, "which", lambda _: "/usr/bin/gfortran")
+
+    calls: list[list[str]] = []
+
+    def fake_run(command, **kwargs):
+        calls.append(list(command))
+        if len(calls) == 2:
+            job.partial_output_path.write_bytes(b"binary")
+            job.partial_metadata_path.write_text("status: complete\n", encoding="utf-8")
+            job.partial_performance_path.write_text(
+                "extractor_wall_seconds\n1.0\n", encoding="utf-8"
+            )
+
+    monkeypatch.setattr(molecular_axis.subprocess, "run", fake_run)
+
+    result_output, result_metadata = molecular_axis.run_molecular_axis_local(job)
+
+    assert len(calls) == 2
+    assert result_output.read_bytes() == b"binary"
+    assert result_metadata.read_text(encoding="utf-8") == "status: complete\n"
+    assert job.performance_path.is_file()
+    assert job.reproduce_path.is_file()
+    assert not job.partial_output_path.exists()
+    assert not job.partial_metadata_path.exists()
+    assert not job.partial_performance_path.exists()
+    assert not job.partial_reproduce_path.exists()

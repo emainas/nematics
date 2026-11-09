@@ -4,6 +4,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -55,6 +56,13 @@ class PreparedMolecularAxisJob:
     namelist_path: Path
     slurm_script_path: Path
     normalized_config_path: Path
+    metadata_path: Path
+    reproduce_path: Path
+    performance_path: Path
+    partial_output_path: Path
+    partial_metadata_path: Path
+    partial_reproduce_path: Path
+    partial_performance_path: Path
 
 
 def _repo_root() -> Path:
@@ -130,13 +138,8 @@ def load_molecular_axis_config(path: str | Path) -> MolecularAxisConfig:
     frames = _mapping(_required(root, "frames", "root"), "frames")
     axis = _mapping(_required(root, "molecular_axis", "root"), "molecular_axis")
     output = _mapping(_required(root, "output", "root"), "output")
-    execution = _mapping(root.get("execution", {}), "execution")
     slurm = _mapping(_required(root, "slurm", "root"), "slurm")
     fortran = _mapping(root.get("fortran", {}), "fortran")
-
-    mode = str(execution.get("mode", "slurm")).lower()
-    if mode != "slurm":
-        raise ValueError("execution.mode must be 'slurm' for molecular-axis jobs")
 
     trajectory = _resolve_path(
         _required(trajectory_cfg, "path", "trajectory"), config_path.parent
@@ -270,7 +273,10 @@ def _source_path(config: MolecularAxisConfig) -> Path:
 
 
 def _namelist_text(
-    config: MolecularAxisConfig, partial_output: Path, partial_metadata: Path
+    config: MolecularAxisConfig,
+    partial_output: Path,
+    partial_metadata: Path,
+    partial_performance: Path,
 ) -> str:
     return "\n".join(
         [
@@ -279,6 +285,7 @@ def _namelist_text(
             f"  output_path = {_fortran_string(partial_output)}",
             f"  final_output_path = {_fortran_string(config.output_path)}",
             f"  metadata_path = {_fortran_string(partial_metadata)}",
+            f"  performance_path = {_fortran_string(partial_performance)}",
             f"  molecule_name = {_fortran_string(config.molecule)}",
             f"  dataset_name = {_fortran_string(config.dataset)}",
             f"  run_id = {_fortran_string(config.run_id)}",
@@ -304,7 +311,11 @@ def _slurm_text(
     namelist_path: Path,
     partial_output: Path,
     partial_metadata: Path,
+    partial_reproduce: Path,
+    partial_performance: Path,
     metadata_path: Path,
+    reproduce_path: Path,
+    performance_path: Path,
 ) -> str:
     source = _source_path(config)
     log_path = namelist_path.parent / "slurm-%j.out"
@@ -333,10 +344,15 @@ def _slurm_text(
     flags = " ".join(shlex.quote(flag) for flag in config.compiler_flags)
     output = shlex.quote(str(config.output_path))
     metadata = shlex.quote(str(metadata_path))
+    reproduce = shlex.quote(str(reproduce_path))
+    performance = shlex.quote(str(performance_path))
     partial = shlex.quote(str(partial_output))
     partial_meta = shlex.quote(str(partial_metadata))
+    partial_reproduce_quoted = shlex.quote(str(partial_reproduce))
+    partial_performance_quoted = shlex.quote(str(partial_performance))
     overwrite_test = "" if config.overwrite else (
-        f"if [[ -e {output} || -e {metadata} ]]; then\n"
+        f"if [[ -e {output} || -e {metadata} || -e {reproduce} || "
+        f"-e {performance} ]]; then\n"
         "  echo 'Refusing to replace an existing completed output.' >&2\n"
         "  exit 3\n"
         "fi\n"
@@ -348,10 +364,16 @@ def _slurm_text(
             "work_root=${SLURM_TMPDIR:-/tmp}",
             'exe="$work_root/nematics-molecular-axis-${SLURM_JOB_ID}"',
             f"{compiler} {flags} {shlex.quote(str(source))} -o \"$exe\"",
-            f"rm -f -- {partial} {partial_meta}",
+            f"rm -f -- {partial} {partial_meta} {partial_performance_quoted}",
             f"srun \"$exe\" {shlex.quote(str(namelist_path))}",
             f"mv {move_flag} -- {partial} {output}".replace("mv  --", "mv --"),
             f"mv {move_flag} -- {partial_meta} {metadata}".replace(
+                "mv  --", "mv --"
+            ),
+            f"mv {move_flag} -- {partial_performance_quoted} {performance}".replace(
+                "mv  --", "mv --"
+            ),
+            f"mv {move_flag} -- {partial_reproduce_quoted} {reproduce}".replace(
                 "mv  --", "mv --"
             ),
             "echo 'Molecular-axis extraction completed.'",
@@ -379,14 +401,24 @@ def prepare_molecular_axis_job(
     provenance = output_dir / "provenance"
     provenance.mkdir(parents=True, exist_ok=True)
     metadata_path = config.output_path.with_suffix(".meta.yaml")
+    reproduce_path = output_dir / "reproduce.yaml"
+    performance_path = output_dir / "performance.csv"
     partial_output = config.output_path.with_suffix(config.output_path.suffix + ".partial")
     partial_metadata = metadata_path.with_suffix(metadata_path.suffix + ".partial")
+    partial_reproduce = output_dir / "reproduce.yaml.partial"
+    partial_performance = output_dir / "performance.csv.partial"
     namelist = provenance / "molecular-axis.nml"
     slurm_script = provenance / "molecular-axis.sbatch"
     normalized = provenance / "config.yaml"
 
     namelist.write_text(
-        _namelist_text(config, partial_output, partial_metadata), encoding="utf-8"
+        _namelist_text(
+            config,
+            partial_output,
+            partial_metadata,
+            partial_performance,
+        ),
+        encoding="utf-8",
     )
     slurm_script.write_text(
         _slurm_text(
@@ -394,7 +426,11 @@ def prepare_molecular_axis_job(
             namelist,
             partial_output,
             partial_metadata,
+            partial_reproduce,
+            partial_performance,
             metadata_path,
+            reproduce_path,
+            performance_path,
         ),
         encoding="utf-8",
     )
@@ -412,7 +448,95 @@ def prepare_molecular_axis_job(
         namelist_path=namelist,
         slurm_script_path=slurm_script,
         normalized_config_path=normalized,
+        metadata_path=metadata_path,
+        reproduce_path=reproduce_path,
+        performance_path=performance_path,
+        partial_output_path=partial_output,
+        partial_metadata_path=partial_metadata,
+        partial_reproduce_path=partial_reproduce,
+        partial_performance_path=partial_performance,
     )
+
+
+def _write_reproduce(job: PreparedMolecularAxisJob, execution_mode: str) -> None:
+    config_document = yaml.safe_load(
+        job.config.config_path.read_text(encoding="utf-8")
+    )
+    config_document["reproduction"] = {
+        "execution_mode": execution_mode,
+        "command": (
+            f"nematics molecular-axis {job.config.config_path} "
+            f"--{execution_mode}"
+        ),
+        "config_path": str(job.config.config_path),
+        "trajectory_path": str(job.config.trajectory),
+        "output_path": str(job.config.output_path),
+        "fortran_source": str(_source_path(job.config)),
+    }
+    job.partial_reproduce_path.write_text(
+        yaml.safe_dump(config_document, sort_keys=False), encoding="utf-8"
+    )
+
+
+def run_molecular_axis_local(
+    job: PreparedMolecularAxisJob,
+) -> tuple[Path, Path]:
+    """Compile and run the Fortran extractor directly on the current host."""
+    config = job.config
+    if not config.overwrite:
+        existing = [
+            path
+            for path in (
+                config.output_path,
+                job.metadata_path,
+                job.reproduce_path,
+                job.performance_path,
+            )
+            if path.exists()
+        ]
+        if existing:
+            raise FileExistsError(
+                "Refusing to replace existing completed output: "
+                + ", ".join(str(path) for path in existing)
+            )
+
+    job.partial_output_path.unlink(missing_ok=True)
+    job.partial_metadata_path.unlink(missing_ok=True)
+    job.partial_performance_path.unlink(missing_ok=True)
+    _write_reproduce(job, "local")
+    compiler = shutil.which(config.compiler)
+    if compiler is None:
+        raise RuntimeError(f"Fortran compiler was not found on PATH: {config.compiler}")
+
+    with tempfile.TemporaryDirectory(prefix="nematics-molecular-axis-") as tmp:
+        executable = Path(tmp) / "molecular-axis"
+        compile_command = [
+            compiler,
+            *config.compiler_flags,
+            str(_source_path(config)),
+            "-o",
+            str(executable),
+        ]
+        subprocess.run(compile_command, check=True, cwd=config.repo_root)
+        subprocess.run(
+            [str(executable), str(job.namelist_path)],
+            check=True,
+            cwd=config.repo_root,
+        )
+
+    required_partial_outputs = (
+        job.partial_output_path,
+        job.partial_metadata_path,
+        job.partial_reproduce_path,
+        job.partial_performance_path,
+    )
+    if not all(path.is_file() for path in required_partial_outputs):
+        raise RuntimeError("Run completed without producing every partial output")
+    job.partial_output_path.replace(config.output_path)
+    job.partial_metadata_path.replace(job.metadata_path)
+    job.partial_performance_path.replace(job.performance_path)
+    job.partial_reproduce_path.replace(job.reproduce_path)
+    return config.output_path, job.metadata_path
 
 
 def submit_molecular_axis_job(job: PreparedMolecularAxisJob) -> str:
@@ -420,6 +544,7 @@ def submit_molecular_axis_job(job: PreparedMolecularAxisJob) -> str:
     sbatch = shutil.which("sbatch")
     if sbatch is None:
         raise RuntimeError("sbatch was not found on PATH")
+    _write_reproduce(job, "slurm")
     result = subprocess.run(
         [sbatch, str(job.slurm_script_path)],
         check=True,

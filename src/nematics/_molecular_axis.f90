@@ -16,6 +16,7 @@ program nematics_molecular_axis
     character(len=path_len) :: output_path = ''
     character(len=path_len) :: final_output_path = ''
     character(len=path_len) :: metadata_path = ''
+    character(len=path_len) :: performance_path = ''
     character(len=256) :: molecule_name = ''
     character(len=256) :: dataset_name = ''
     character(len=256) :: run_id = ''
@@ -32,7 +33,7 @@ program nematics_molecular_axis
     logical :: normalize_vectors = .true.
 
     namelist /molecular_axis_job/ trajectory_path, output_path, final_output_path, &
-        metadata_path, molecule_name, dataset_name, run_id, axis_name, &
+        metadata_path, performance_path, molecule_name, dataset_name, run_id, axis_name, &
         temperature_k, molecules, atoms_per_molecule, frame_start, frame_stop, &
         frame_stride, start_atom, end_atom, use_minimum_image, normalize_vectors
 
@@ -41,12 +42,15 @@ program nematics_molecular_axis
     character(len=32) :: atom_name
     character(len=8) :: magic
     integer :: argc, cfg_unit, trajectory_unit, output_unit, metadata_unit
+    integer :: performance_unit
     integer :: ios, natoms, expected_atoms, atom_line, atom_id
     integer :: molecule_id, local_atom, frame_seen, frames_written
     integer(int64) :: stored_frame_count
+    integer(int64) :: clock_start, clock_end, clock_rate, vectors_written
     logical :: selected
     real(real64) :: xyz(3), box_parameters(6), cell(3, 3), inverse_cell(3, 3)
     real(real64) :: displacement(3), vector_length
+    real(real64) :: elapsed_seconds, frames_per_second, vectors_per_second
     real(real64), allocatable :: start_position(:, :), end_position(:, :)
     real(real32), allocatable :: frame_axes(:, :)
     logical, allocatable :: start_seen(:), end_seen(:)
@@ -63,6 +67,7 @@ program nematics_molecular_axis
     if (ios /= 0) call fatal('cannot parse the molecular-axis namelist')
 
     call validate_configuration()
+    call system_clock(count=clock_start, count_rate=clock_rate)
     expected_atoms = molecules * atoms_per_molecule
 
     allocate(start_position(3, molecules), end_position(3, molecules))
@@ -186,6 +191,35 @@ program nematics_molecular_axis
     call write_metadata(metadata_unit, frame_seen, frames_written)
     close(metadata_unit)
 
+    call system_clock(count=clock_end)
+    if (clock_rate > 0_int64) then
+        elapsed_seconds = real(clock_end - clock_start, real64) / &
+            real(clock_rate, real64)
+    else
+        elapsed_seconds = 0.0_real64
+    end if
+    vectors_written = int(frames_written, int64) * int(molecules, int64)
+    if (elapsed_seconds > 0.0_real64) then
+        frames_per_second = real(frames_written, real64) / elapsed_seconds
+        vectors_per_second = real(vectors_written, real64) / elapsed_seconds
+    else
+        frames_per_second = 0.0_real64
+        vectors_per_second = 0.0_real64
+    end if
+
+    open(newunit=performance_unit, file=trim(performance_path), status='replace', &
+        action='write', form='formatted', iostat=ios)
+    if (ios /= 0) call fatal('cannot create the performance CSV file')
+    write(performance_unit, '(A)') &
+        'run_id,temperature_k,frames_read,frames_written,molecules,' // &
+        'vectors_written,extractor_wall_seconds,frames_per_second,' // &
+        'vectors_per_second'
+    write(performance_unit, &
+        '(A,",",F0.5,",",I0,",",I0,",",I0,",",I0,",",F0.6,",",F0.6,",",F0.6)') &
+        trim(run_id), temperature_k, frame_seen, frames_written, molecules, &
+        vectors_written, elapsed_seconds, frames_per_second, vectors_per_second
+    close(performance_unit)
+
     write(*, '(A,I0,A,I0,A)') 'Completed: read ', frame_seen, &
         ' ARC frames and wrote ', frames_written, ' molecular-axis frames.'
 
@@ -196,6 +230,7 @@ contains
         if (len_trim(output_path) == 0) call fatal('output_path is empty')
         if (len_trim(final_output_path) == 0) call fatal('final_output_path is empty')
         if (len_trim(metadata_path) == 0) call fatal('metadata_path is empty')
+        if (len_trim(performance_path) == 0) call fatal('performance_path is empty')
         if (molecules <= 0) call fatal('molecules must be positive')
         if (atoms_per_molecule <= 0) call fatal('atoms_per_molecule must be positive')
         if (start_atom < 1 .or. start_atom > atoms_per_molecule) then

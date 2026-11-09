@@ -8,7 +8,16 @@ import numpy as np
 from .datasets import dataset_names, get_dataset, get_project_paths
 from .fortran_backend import build_paircorr_fortran
 from .gro import read_gro_frame
-from .molecular_axis import prepare_molecular_axis_job, submit_molecular_axis_job
+from .molecular_axis import (
+    prepare_molecular_axis_job,
+    run_molecular_axis_local,
+    submit_molecular_axis_job,
+)
+from .nematic_order import (
+    prepare_nematic_order_job,
+    run_nematic_order_local,
+    submit_nematic_order_job,
+)
 from .order import compute_and_save_order
 from .paf import compute_global_paf, make_molecular_axes
 from .paircorr import compute_paircorr_for_dir, save_paircorr_results
@@ -214,16 +223,46 @@ def main() -> int:
 
     molecular_axis_parser = subparsers.add_parser(
         "molecular-axis",
-        help="Prepare or submit a YAML-defined Fortran molecular-axis extraction",
+        help="Prepare or run a YAML-defined Fortran molecular-axis extraction",
     )
     molecular_axis_parser.add_argument(
         "config",
         help="Path to the molecular-axis YAML configuration",
     )
-    molecular_axis_parser.add_argument(
+    molecular_axis_execution = molecular_axis_parser.add_mutually_exclusive_group()
+    molecular_axis_execution.add_argument(
+        "--slurm",
         "--submit",
+        dest="run_slurm",
         action="store_true",
-        help="Submit the generated job with sbatch (preparation alone never submits)",
+        help="Submit with sbatch using the YAML slurm section",
+    )
+    molecular_axis_execution.add_argument(
+        "--local",
+        action="store_true",
+        help="Compile and run the Fortran extractor directly on the current host",
+    )
+
+    nematic_order_parser = subparsers.add_parser(
+        "nematic-order",
+        help="Prepare or run a YAML-defined Fortran nematic-order calculation",
+    )
+    nematic_order_parser.add_argument(
+        "config",
+        help="Path to the nematic-order YAML configuration",
+    )
+    nematic_order_execution = nematic_order_parser.add_mutually_exclusive_group()
+    nematic_order_execution.add_argument(
+        "--slurm",
+        "--submit",
+        dest="run_slurm",
+        action="store_true",
+        help="Submit with sbatch using the YAML slurm section",
+    )
+    nematic_order_execution.add_argument(
+        "--local",
+        action="store_true",
+        help="Compile and run the Fortran calculation directly on the current host",
     )
 
     args = parser.parse_args()
@@ -329,10 +368,40 @@ def main() -> int:
         print(f"Wrote {job.namelist_path}")
         print(f"Wrote {job.slurm_script_path}")
         print(f"Planned output: {job.config.output_path}")
-        if args.submit:
+        if args.run_slurm:
             print(submit_molecular_axis_job(job))
+        elif args.local:
+            output, metadata = run_molecular_axis_local(job)
+            print(f"Wrote {output}")
+            print(f"Wrote {metadata}")
+            print(f"Wrote {job.reproduce_path}")
+            print(f"Wrote {job.performance_path}")
         else:
-            print("Not submitted. Re-run with --submit after reviewing the files above.")
+            print(
+                "Prepared only. Re-run with --slurm or --local after reviewing "
+                "the files above."
+            )
+        return 0
+
+    if args.command == "nematic-order":
+        job = prepare_nematic_order_job(args.config)
+        print(f"Wrote {job.namelist_path}")
+        print(f"Wrote {job.slurm_script_path}")
+        print(f"Planned output: {job.config.output_path}")
+        if args.run_slurm:
+            print(submit_nematic_order_job(job))
+        elif args.local:
+            output, csv_output = run_nematic_order_local(job)
+            print(f"Wrote {output}")
+            print(f"Wrote {csv_output}")
+            print(f"Wrote {job.metadata_path}")
+            print(f"Wrote {job.reproduce_path}")
+            print(f"Wrote {job.performance_path}")
+        else:
+            print(
+                "Prepared only. Re-run with --slurm or --local after reviewing "
+                "the files above."
+            )
         return 0
 
     raise SystemExit("Unknown command")

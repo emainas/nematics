@@ -19,24 +19,22 @@ frames:
   stride: 1
 
 molecular_axis:
-  name: alekos-molzax
-  # Exact legacy convention: MolZax = unit(r9 - r10).
-  start_atom: 10
-  end_atom: 9
+  name: alekos-molzax-equivalent
+  # 4OCB structural equivalent of Alekos's 5CB MolZax atom pair.
+  start_atom: 11
+  end_atom: 5
   pbc: minimum_image
   normalize: true
 
 output:
-  path: data-processed/4ocb/amoeba-pt2.2/020a_d-md-288/molecular-axis/alekos-molzax/molecular-axis.bin
-  overwrite: true
-
-execution:
-  mode: slurm
+  path: data-processed/4ocb/amoeba-pt2.2/020a_d-md-288/molecular-axis/molecular-axis.bin
+  overwrite: false
 
 slurm:
-  partition: general
-  time: 02:00:00
-  memory: 2G
+  partition: general_big
+  account: rc_elipieri_pi
+  time: 00:30:00
+  memory: 512M
   cpus_per_task: 1
   job_name: axis-4ocb-288
   # Add the cluster compiler module here if gfortran is not already on PATH.

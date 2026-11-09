@@ -1,0 +1,36 @@
+version: 1
+system:
+  molecule: 5cb
+  dataset: amoeba-pt2.7
+  run_id: 004e_d-md-304
+  temperature_k: 304
+trajectory:
+  path: /hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7/004e_d-md-304/5cb-x1000.arc
+  format: tinker_arc
+  molecules: 1000
+  atoms_per_molecule: 38
+frames:
+  start: 1
+  stop: 0
+  stride: 1
+molecular_axis:
+  name: alekos-molzax
+  start_atom: 10
+  end_atom: 9
+  pbc: minimum_image
+  normalize: true
+output:
+  path: data-processed/5cb/amoeba-pt2.7/004e_d-md-304/molecular-axis/molecular-axis.bin
+  overwrite: false
+slurm:
+  partition: general_big
+  account: rc_elipieri_pi
+  time: 00:30:00
+  memory: 512M
+  cpus_per_task: 1
+  job_name: axis-5cb-304
+  modules: []
+fortran:
+  compiler: gfortran
+  flags: [-O3, -std=f2008]
+

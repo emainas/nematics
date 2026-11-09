@@ -1,42 +1,36 @@
 # nematics
 
-Research analysis code for liquid-crystal molecular-dynamics trajectories.
-The current workflows cover 5CB monomers with GAFF and AMOEBA, 4OCB monomers
-with AMOEBA, and CB7CB conformation and induced-chirality analysis.
-
-## Layout
-
-- `src/nematics/`: reusable trajectory, order, susceptibility, and
-  pair-correlation code
-- `config/`: dataset registry plus workflow YAML files mirroring processed paths
-- `workflows/`: analysis programs grouped by molecular system
-- `tools/`: trajectory-conversion and VMD utilities
-- `tests/`: automated checks
-- `data-processed/`: generated numerical products, ignored by Git
-- `reports/`: generated figures and reports, ignored by Git
-
-Raw trajectories remain external and read only. Generated files belong under
-`data-processed/<molecule>/<dataset>/<workflow>/`.
+Fortran-backed analysis of liquid-crystal molecular-dynamics trajectories.
+Raw trajectories are external and read only; generated products belong under
+`data-processed/<system>/<dataset>/<run>/<analysis>/`.
 
 ## Setup
 
 ```bash
 uv venv .venv-nematics
 source .venv-nematics/bin/activate
-uv pip install -e ".[dev,viz]"
+uv pip install -e ".[dev]"
 ```
 
-Use command help for workflow options:
+`gfortran` and Slurm are required for compute-node execution.
+
+## Commands
 
 ```bash
-nematics --help
-nematics datasets --check
-python workflows/<system>/<workflow>.py --help
+nematics molecular-axis CONFIG.yaml --slurm
+nematics nematic-order CONFIG.yaml --slurm
 ```
 
-AMOEBA workflows generally require AmberTools `cpptraj`. The optional compiled
-pair-correlation backend requires `gfortran` and can be built with
-`nematics build-fortran`.
+Use `--local` instead of `--slurm` to run Fortran on the current host. With
+neither flag, the command only prepares the namelist and job script.
 
-The YAML/Slurm-driven standalone Fortran molecular-axis extractor is described
-in `workflows/molecular-axis/README.md`.
+Configurations mirror processed paths under `config/<system>/<dataset>/<run>/`.
+Successful runs retain numerical output, metadata, `reproduce.yaml`,
+`performance.csv`, and Slurm provenance.
+
+## Layout
+
+- `src/nematics/`: Python launchers and Fortran calculations
+- `config/`: datasets and per-run YAML configurations
+- `data-processed/`: generated numerical products
+- `tests/`: focused validation tests
