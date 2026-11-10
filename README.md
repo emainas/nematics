@@ -1,18 +1,18 @@
 # nematics
 
-Fortran-backed analysis of liquid-crystal molecular-dynamics trajectories.
-Raw trajectories are external and read only; generated products belong under
-`data-processed/<system>/<dataset>/<run>/<analysis>/`.
+Analysis tools for liquid-crystal molecular-dynamics trajectories. Raw data
+are external and read only; generated products stay under `data-processed/`.
 
 ## Setup
 
 ```bash
 uv venv .venv-nematics
 source .venv-nematics/bin/activate
-uv pip install -e ".[dev]"
+uv pip install -e ".[dev,viz]"
 ```
 
-`gfortran` and Slurm are required for compute-node execution.
+Fortran commands require `gfortran`; Slurm is needed only with `--slurm`.
+Dihedral configurations contain the cpptraj executable path.
 
 ## Commands
 
@@ -24,16 +24,26 @@ nematics dihedral CONFIG.yaml --local
 ```
 
 Use `--local` instead of `--slurm` to run Fortran on the current host. The
-cpptraj-backed dihedral command is currently local-only. With neither flag,
-commands only prepare their reproducibility inputs.
+cpptraj-backed dihedral command is local-only. With neither execution flag,
+commands prepare their reproducibility inputs without running the analysis.
+
+Current summary figures are generated with:
+
+```bash
+python tools/plot_nematic_order_vs_temperature.py
+python tools/plot_corr_panels.py
+python tools/plot_4ocb_dihedral_pmfs.py
+```
 
 Configurations mirror processed paths under `config/<system>/<dataset>/<run>/`.
 Successful runs retain numerical output, metadata, `reproduce.yaml`,
-`performance.csv`, and Slurm provenance.
+`performance.csv`, and execution provenance.
 
 ## Layout
 
-- `src/nematics/`: Python launchers and Fortran calculations
+- `src/nematics/`: CLI, Python launchers, and Fortran calculations
 - `config/`: datasets and per-run YAML configurations
 - `data-processed/`: generated numerical products
+- `reports/`: generated figures
+- `tools/`: plotting utilities
 - `tests/`: focused validation tests
