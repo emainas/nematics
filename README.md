@@ -19,10 +19,13 @@ uv pip install -e ".[dev]"
 ```bash
 nematics molecular-axis CONFIG.yaml --slurm
 nematics nematic-order CONFIG.yaml --slurm
+nematics corr CONFIG.yaml --slurm
+nematics dihedral CONFIG.yaml --local
 ```
 
-Use `--local` instead of `--slurm` to run Fortran on the current host. With
-neither flag, the command only prepares the namelist and job script.
+Use `--local` instead of `--slurm` to run Fortran on the current host. The
+cpptraj-backed dihedral command is currently local-only. With neither flag,
+commands only prepare their reproducibility inputs.
 
 Configurations mirror processed paths under `config/<system>/<dataset>/<run>/`.
 Successful runs retain numerical output, metadata, `reproduce.yaml`,

@@ -1,0 +1,45 @@
+version: 1
+system:
+  molecule: 4ocb
+  dataset: amoeba-pt2.2
+  run_id: 013b_d-md-328
+  temperature_k: 328
+trajectory:
+  path: /hickory/proj/cdpoonlab/users/emainas/tinker9-4ocb-x1000-pt2.2/013b_d-md-328/4ocb-x1000.arc
+  format: tinker_arc
+  molecules: 1000
+  atoms_per_molecule: 36
+frames:
+  start: 1
+  stop: 0
+  stride: 1
+inputs:
+  director: data-processed/4ocb/amoeba-pt2.2/013b_d-md-328/nematic-order/nematic-order.bin
+  vectors: data-processed/4ocb/amoeba-pt2.2/013b_d-md-328/molecular-axis/molecular-axis.bin
+position:
+  definition: atom_average
+  local_atoms: [8, 9, 13]
+analysis:
+  rank: 2
+  cylinder_radii_nm: [1.0, 2.0, 3.0]
+  axial_max_nm: 5.0
+  perpendicular_max_nm: 5.0
+  radial_max_nm: 5.0
+  slab_half_thickness_nm: 0.2
+  bins: 200
+  periodic_images: 27
+output:
+  path: data-processed/4ocb/amoeba-pt2.2/013b_d-md-328/corr/rank-2
+  overwrite: false
+slurm:
+  partition: general
+  account: rc_elipieri_pi
+  time: 08:00:00
+  memory: 1G
+  cpus_per_task: 1
+  job_name: corr2-4ocb-328
+  modules: []
+fortran:
+  compiler: gfortran
+  flags: [-O3, -std=f2008]
+

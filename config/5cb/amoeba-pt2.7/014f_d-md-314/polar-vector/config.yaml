@@ -1,0 +1,36 @@
+version: 1
+system:
+  molecule: 5cb
+  dataset: amoeba-pt2.7
+  run_id: 014f_d-md-314
+  temperature_k: 314
+trajectory:
+  path: /hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7/014f_d-md-314/5cb-x1000.arc
+  format: tinker_arc
+  molecules: 1000
+  atoms_per_molecule: 38
+frames:
+  start: 1
+  stop: 0
+  stride: 1
+molecular_axis:
+  name: cn-polar-vector
+  start_atom: 3
+  end_atom: 4
+  pbc: minimum_image
+  normalize: true
+output:
+  path: data-processed/5cb/amoeba-pt2.7/014f_d-md-314/polar-vector/polar-vector.bin
+  overwrite: false
+slurm:
+  partition: general
+  account: rc_elipieri_pi
+  time: 00:30:00
+  memory: 512M
+  cpus_per_task: 1
+  job_name: polar-5cb-314
+  modules: []
+fortran:
+  compiler: gfortran
+  flags: [-O3, -std=f2008]
+

@@ -5,7 +5,9 @@ from pathlib import Path
 
 import numpy as np
 
+from .corr import prepare_corr_job, run_corr_local, submit_corr_job
 from .datasets import dataset_names, get_dataset, get_project_paths
+from .dihedral import prepare_dihedral_job, run_dihedral_local
 from .fortran_backend import build_paircorr_fortran
 from .gro import read_gro_frame
 from .molecular_axis import (
@@ -265,6 +267,36 @@ def main() -> int:
         help="Compile and run the Fortran calculation directly on the current host",
     )
 
+    corr_parser = subparsers.add_parser(
+        "corr",
+        help="Prepare or run a YAML-defined Fortran pair-correlation calculation",
+    )
+    corr_parser.add_argument("config", help="Path to the corr YAML configuration")
+    corr_execution = corr_parser.add_mutually_exclusive_group()
+    corr_execution.add_argument(
+        "--slurm",
+        "--submit",
+        dest="run_slurm",
+        action="store_true",
+        help="Submit with sbatch using the YAML slurm section",
+    )
+    corr_execution.add_argument(
+        "--local",
+        action="store_true",
+        help="Compile and run the Fortran calculation directly on the current host",
+    )
+
+    dihedral_parser = subparsers.add_parser(
+        "dihedral",
+        help="Prepare or locally run a YAML-defined cpptraj dihedral extraction",
+    )
+    dihedral_parser.add_argument("config", help="Path to the dihedral YAML configuration")
+    dihedral_parser.add_argument(
+        "--local",
+        action="store_true",
+        help="Run cpptraj directly on the current host",
+    )
+
     args = parser.parse_args()
 
     if args.command == "datasets":
@@ -402,6 +434,38 @@ def main() -> int:
                 "Prepared only. Re-run with --slurm or --local after reviewing "
                 "the files above."
             )
+        return 0
+
+    if args.command == "corr":
+        job = prepare_corr_job(args.config)
+        print(f"Wrote {job.namelist_path}")
+        print(f"Wrote {job.slurm_script_path}")
+        print(f"Planned output: {job.config.output_dir}")
+        if args.run_slurm:
+            print(submit_corr_job(job))
+        elif args.local:
+            for output in run_corr_local(job):
+                print(f"Wrote {output}")
+        else:
+            print(
+                "Prepared only. Re-run with --slurm or --local after reviewing "
+                "the files above."
+            )
+        return 0
+
+    if args.command == "dihedral":
+        job = prepare_dihedral_job(args.config)
+        print(f"Wrote {job.cpptraj_input_path}")
+        print(f"Planned output: {job.config.output_path}")
+        if args.local:
+            output, metadata = run_dihedral_local(job)
+            print(f"Wrote {output}")
+            print(f"Wrote {metadata}")
+            print(f"Wrote {job.cpptraj_log_path}")
+            print(f"Wrote {job.reproduce_path}")
+            print(f"Wrote {job.performance_path}")
+        else:
+            print("Prepared only. Re-run with --local after reviewing the cpptraj input.")
         return 0
 
     raise SystemExit("Unknown command")

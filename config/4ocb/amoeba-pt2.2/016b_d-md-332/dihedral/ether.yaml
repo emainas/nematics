@@ -1,0 +1,26 @@
+version: 1
+system:
+  molecule: 4ocb
+  dataset: amoeba-pt2.2
+  run_id: 016b_d-md-332
+  temperature_k: 332
+trajectory:
+  path: /hickory/proj/cdpoonlab/users/emainas/tinker9-4ocb-x1000-pt2.2/016b_d-md-332/4ocb-x1000.arc
+  format: tinker_arc
+  molecules: 1000
+  atoms_per_molecule: 36
+frames:
+  start: 1
+  stop: 0
+  stride: 1
+dihedral:
+  name: ether
+  atoms: [16, 15, 28, 11]
+  pbc: autoimage
+  range: '0_360'
+cpptraj:
+  path: /proj/pierilab/software/amber/ambertools25/bin/cpptraj
+output:
+  path: data-processed/4ocb/amoeba-pt2.2/016b_d-md-332/dihedral/ether/dihedral.dat
+  overwrite: false
+
