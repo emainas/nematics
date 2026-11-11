@@ -39,6 +39,9 @@ Configurations mirror processed paths under `config/<system>/<dataset>/<run>/`.
 Successful runs retain numerical output, metadata, `reproduce.yaml`,
 `performance.csv`, and execution provenance.
 
+Correlation YAMLs may request one `analysis.rank` or `analysis.ranks: [0, 1, 2]`;
+the latter writes `g0`, `g1`, `g2`, `C1`, and `C2` from one pair traversal.
+
 ## Layout
 
 - `src/nematics/`: CLI, Python launchers, and Fortran calculations

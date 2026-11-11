@@ -27,6 +27,7 @@ program nematics_corr
     integer :: frame_stop = 0
     integer :: frame_stride = 1
     integer :: correlation_rank = 0
+    logical :: all_ranks = .false.
     integer :: bins = 200
     integer :: radius_count = 0
     real(real64) :: cylinder_radii(max_radii) = 0.0_real64
@@ -41,7 +42,7 @@ program nematics_corr
         parallel_path, perpendicular_path, radial_path, metadata_path, &
         performance_path, molecule_name, dataset_name, run_id, temperature_k, &
         molecules, atoms_per_molecule, frame_start, frame_stop, frame_stride, &
-        correlation_rank, bins, radius_count, cylinder_radii, axial_max_nm, &
+        correlation_rank, all_ranks, bins, radius_count, cylinder_radii, axial_max_nm, &
         perpendicular_max_nm, radial_max_nm, slab_half_thickness_nm, &
         position_atom_count, position_atoms
 
@@ -62,6 +63,12 @@ program nematics_corr
     real(real64), allocatable :: g0_parallel(:, :), grank_parallel(:, :)
     real(real64), allocatable :: g0_perpendicular(:), grank_perpendicular(:)
     real(real64), allocatable :: g0_radial(:), grank_radial(:)
+    real(real64), allocatable :: sum_p1_parallel(:, :), sum_p2_parallel(:, :)
+    real(real64), allocatable :: sum_p1_perpendicular(:), sum_p2_perpendicular(:)
+    real(real64), allocatable :: sum_p1_radial(:), sum_p2_radial(:)
+    real(real64), allocatable :: g1_parallel(:, :), g2_parallel(:, :)
+    real(real64), allocatable :: g1_perpendicular(:), g2_perpendicular(:)
+    real(real64), allocatable :: g1_radial(:), g2_radial(:)
     real(real64), allocatable :: atom_positions(:, :, :), molecular_positions(:, :)
     real(real64), allocatable :: axis64(:, :)
     real(real32), allocatable :: axes(:, :)
@@ -69,6 +76,7 @@ program nematics_corr
     real(real64) :: reference(3), displacement(3), rij0(3), rij(3)
     real(real64) :: rho, dz, dr_perpendicular, dr_radial
     real(real64) :: rijsq, distance, rz, abs_rz, rperp, norm, pair_dot, weight
+    real(real64) :: p1_weight, p2_weight
     real(real64) :: cutoff_sq, elapsed_seconds, frames_per_second
     logical :: selected
 
@@ -92,6 +100,12 @@ program nematics_corr
     allocate(raw_perpendicular(bins), sum_perpendicular(bins))
     allocate(g0_perpendicular(bins), grank_perpendicular(bins))
     allocate(raw_radial(bins), sum_radial(bins), g0_radial(bins), grank_radial(bins))
+    allocate(sum_p1_parallel(bins, radius_count), sum_p2_parallel(bins, radius_count))
+    allocate(sum_p1_perpendicular(bins), sum_p2_perpendicular(bins))
+    allocate(sum_p1_radial(bins), sum_p2_radial(bins))
+    allocate(g1_parallel(bins, radius_count), g2_parallel(bins, radius_count))
+    allocate(g1_perpendicular(bins), g2_perpendicular(bins))
+    allocate(g1_radial(bins), g2_radial(bins))
     raw_parallel = 0_int64
     sum_parallel = 0.0_real64
     g0_parallel = 0.0_real64
@@ -104,6 +118,18 @@ program nematics_corr
     sum_radial = 0.0_real64
     g0_radial = 0.0_real64
     grank_radial = 0.0_real64
+    sum_p1_parallel = 0.0_real64
+    sum_p2_parallel = 0.0_real64
+    sum_p1_perpendicular = 0.0_real64
+    sum_p2_perpendicular = 0.0_real64
+    sum_p1_radial = 0.0_real64
+    sum_p2_radial = 0.0_real64
+    g1_parallel = 0.0_real64
+    g2_parallel = 0.0_real64
+    g1_perpendicular = 0.0_real64
+    g2_perpendicular = 0.0_real64
+    g1_radial = 0.0_real64
+    g2_radial = 0.0_real64
     pairs_visited = 0_int64
     images_visited = 0_int64
 
@@ -190,13 +216,17 @@ program nematics_corr
                     pairs_visited = pairs_visited + 1_int64
                     if (correlation_rank == 0) then
                         weight = 1.0_real64
+                        p1_weight = 0.0_real64
+                        p2_weight = 0.0_real64
                     else
                         pair_dot = dot_product(axis64(:, i), axis64(:, j))
                         pair_dot = max(-1.0_real64, min(1.0_real64, pair_dot))
+                        p1_weight = pair_dot
+                        p2_weight = 0.5_real64 * (3.0_real64 * pair_dot * pair_dot - 1.0_real64)
                         if (correlation_rank == 1) then
-                            weight = pair_dot
+                            weight = p1_weight
                         else
-                            weight = 0.5_real64 * (3.0_real64 * pair_dot * pair_dot - 1.0_real64)
+                            weight = p2_weight
                         end if
                     end if
                     rij0 = molecular_positions(:, j) - molecular_positions(:, i)
@@ -220,6 +250,12 @@ program nematics_corr
                                         sum_parallel(ib, ir) = sum_parallel(ib, ir) + weight
                                         g0_parallel(ib, ir) = g0_parallel(ib, ir) + 1.0_real64 / norm
                                         grank_parallel(ib, ir) = grank_parallel(ib, ir) + weight / norm
+                                        if (all_ranks) then
+                                            sum_p1_parallel(ib, ir) = sum_p1_parallel(ib, ir) + p1_weight
+                                            sum_p2_parallel(ib, ir) = sum_p2_parallel(ib, ir) + p2_weight
+                                            g1_parallel(ib, ir) = g1_parallel(ib, ir) + p1_weight / norm
+                                            g2_parallel(ib, ir) = g2_parallel(ib, ir) + p2_weight / norm
+                                        end if
                                     end if
                                 end do
                             end if
@@ -236,6 +272,12 @@ program nematics_corr
                                 if (norm > 0.0_real64) then
                                     g0_perpendicular(ib) = g0_perpendicular(ib) + 1.0_real64 / norm
                                     grank_perpendicular(ib) = grank_perpendicular(ib) + weight / norm
+                                    if (all_ranks) then
+                                        sum_p1_perpendicular(ib) = sum_p1_perpendicular(ib) + p1_weight
+                                        sum_p2_perpendicular(ib) = sum_p2_perpendicular(ib) + p2_weight
+                                        g1_perpendicular(ib) = g1_perpendicular(ib) + p1_weight / norm
+                                        g2_perpendicular(ib) = g2_perpendicular(ib) + p2_weight / norm
+                                    end if
                                 end if
                             end if
                         end if
@@ -250,6 +292,12 @@ program nematics_corr
                                 if (norm > 0.0_real64) then
                                     g0_radial(ib) = g0_radial(ib) + 1.0_real64 / norm
                                     grank_radial(ib) = grank_radial(ib) + weight / norm
+                                    if (all_ranks) then
+                                        sum_p1_radial(ib) = sum_p1_radial(ib) + p1_weight
+                                        sum_p2_radial(ib) = sum_p2_radial(ib) + p2_weight
+                                        g1_radial(ib) = g1_radial(ib) + p1_weight / norm
+                                        g2_radial(ib) = g2_radial(ib) + p2_weight / norm
+                                    end if
                                 end if
                             end if
                         end if
@@ -272,9 +320,11 @@ program nematics_corr
 
     call write_parallel_csv()
     call write_one_dimensional_csv(perpendicular_path, perpendicular_max_nm, &
-        raw_perpendicular, sum_perpendicular, g0_perpendicular, grank_perpendicular)
+        raw_perpendicular, sum_perpendicular, g0_perpendicular, grank_perpendicular, &
+        sum_p1_perpendicular, sum_p2_perpendicular, g1_perpendicular, g2_perpendicular)
     call write_one_dimensional_csv(radial_path, radial_max_nm, raw_radial, &
-        sum_radial, g0_radial, grank_radial)
+        sum_radial, g0_radial, grank_radial, sum_p1_radial, sum_p2_radial, &
+        g1_radial, g2_radial)
     call write_metadata()
 
     call system_clock(count=clock_end)
@@ -291,11 +341,19 @@ program nematics_corr
     open(newunit=performance_unit, file=trim(performance_path), status='replace', &
         action='write', iostat=ios)
     if (ios /= 0) call fatal('cannot create performance CSV')
-    write(performance_unit, '(A)') &
-        'run_id,rank,frames,molecules,pairs_visited,images_visited,wall_seconds,frames_per_second'
-    write(performance_unit, '(A,",",I0,",",I0,",",I0,",",I0,",",I0,",",F0.6,",",F0.6)') &
-        trim(run_id), correlation_rank, frames_processed, molecules, pairs_visited, &
-        images_visited, elapsed_seconds, frames_per_second
+    if (all_ranks) then
+        write(performance_unit, '(A)') &
+            'run_id,max_rank,all_ranks,frames,molecules,pairs_visited,images_visited,wall_seconds,frames_per_second'
+        write(performance_unit, '(A,",",I0,",",L1,",",I0,",",I0,",",I0,",",I0,",",F0.6,",",F0.6)') &
+            trim(run_id), correlation_rank, all_ranks, frames_processed, molecules, pairs_visited, &
+            images_visited, elapsed_seconds, frames_per_second
+    else
+        write(performance_unit, '(A)') &
+            'run_id,rank,frames,molecules,pairs_visited,images_visited,wall_seconds,frames_per_second'
+        write(performance_unit, '(A,",",I0,",",I0,",",I0,",",I0,",",I0,",",F0.6,",",F0.6)') &
+            trim(run_id), correlation_rank, frames_processed, molecules, pairs_visited, &
+            images_visited, elapsed_seconds, frames_per_second
+    end if
     close(performance_unit)
     write(*, '(A,I0,A,I0)') 'Completed corr rank ', correlation_rank, &
         ' for frames: ', frames_processed
@@ -307,6 +365,9 @@ contains
         if (len_trim(trajectory_path) == 0) call fatal('trajectory_path is empty')
         if (len_trim(director_path) == 0) call fatal('director_path is empty')
         if (correlation_rank < 0 .or. correlation_rank > 2) call fatal('rank must be 0, 1, or 2')
+        if (all_ranks .and. correlation_rank /= 2) then
+            call fatal('all_ranks requires correlation_rank = 2')
+        end if
         if (correlation_rank > 0 .and. len_trim(vector_path) == 0) then
             call fatal('vector_path is required for rank 1 or 2')
         end if
@@ -403,11 +464,17 @@ contains
 
     subroutine write_parallel_csv()
         real(real64) :: center, g0_value, grank_value, conditional
+        real(real64) :: g1_value, g2_value, c1_value, c2_value
         open(newunit=parallel_unit, file=trim(parallel_path), status='replace', &
             action='write', iostat=ios)
         if (ios /= 0) call fatal('cannot create parallel CSV')
-        write(parallel_unit, '(A)') &
-            'radius_nm,z_nm,raw_pair_count,raw_p_rank_sum,g0,g_rank,c_rank'
+        if (all_ranks) then
+            write(parallel_unit, '(A)') &
+                'radius_nm,z_nm,raw_pair_count,raw_p1_sum,raw_p2_sum,g0,g1,g2,c1,c2'
+        else
+            write(parallel_unit, '(A)') &
+                'radius_nm,z_nm,raw_pair_count,raw_p_rank_sum,g0,g_rank,c_rank'
+        end if
         do ir = 1, radius_count
             do ib = 1, bins
                 center = (real(ib, real64) - 0.5_real64) * dz
@@ -415,33 +482,71 @@ contains
                 grank_value = grank_parallel(ib, ir) / real(frames_processed, real64)
                 conditional = 0.0_real64
                 if (abs(g0_value) > tiny(1.0_real64)) conditional = grank_value / g0_value
-                write(parallel_unit, '(F0.8,",",F0.8,",",I0,4(",",ES24.16E3))') &
-                    cylinder_radii(ir), center, raw_parallel(ib, ir), &
-                    sum_parallel(ib, ir), g0_value, grank_value, conditional
+                if (all_ranks) then
+                    g1_value = g1_parallel(ib, ir) / real(frames_processed, real64)
+                    g2_value = g2_parallel(ib, ir) / real(frames_processed, real64)
+                    c1_value = 0.0_real64
+                    c2_value = 0.0_real64
+                    if (abs(g0_value) > tiny(1.0_real64)) then
+                        c1_value = g1_value / g0_value
+                        c2_value = g2_value / g0_value
+                    end if
+                    write(parallel_unit, '(F0.8,",",F0.8,",",I0,7(",",ES24.16E3))') &
+                        cylinder_radii(ir), center, raw_parallel(ib, ir), &
+                        sum_p1_parallel(ib, ir), sum_p2_parallel(ib, ir), &
+                        g0_value, g1_value, g2_value, c1_value, c2_value
+                else
+                    write(parallel_unit, '(F0.8,",",F0.8,",",I0,4(",",ES24.16E3))') &
+                        cylinder_radii(ir), center, raw_parallel(ib, ir), &
+                        sum_parallel(ib, ir), g0_value, grank_value, conditional
+                end if
             end do
         end do
         close(parallel_unit)
     end subroutine write_parallel_csv
 
-    subroutine write_one_dimensional_csv(path, maximum, raw, raw_sum, g0, grank)
+    subroutine write_one_dimensional_csv(path, maximum, raw, raw_sum, g0, grank, &
+        raw_p1, raw_p2, g1, g2)
         character(len=*), intent(in) :: path
         real(real64), intent(in) :: maximum
         integer(int64), intent(in) :: raw(:)
         real(real64), intent(in) :: raw_sum(:), g0(:), grank(:)
+        real(real64), intent(in) :: raw_p1(:), raw_p2(:), g1(:), g2(:)
         integer :: unit_number, index
         real(real64) :: center, g0_value, grank_value, conditional, width
+        real(real64) :: g1_value, g2_value, c1_value, c2_value
         width = maximum / real(size(raw), real64)
         open(newunit=unit_number, file=trim(path), status='replace', action='write', iostat=ios)
         if (ios /= 0) call fatal('cannot create one-dimensional CSV')
-        write(unit_number, '(A)') 'distance_nm,raw_pair_count,raw_p_rank_sum,g0,g_rank,c_rank'
+        if (all_ranks) then
+            write(unit_number, '(A)') &
+                'distance_nm,raw_pair_count,raw_p1_sum,raw_p2_sum,g0,g1,g2,c1,c2'
+        else
+            write(unit_number, '(A)') &
+                'distance_nm,raw_pair_count,raw_p_rank_sum,g0,g_rank,c_rank'
+        end if
         do index = 1, size(raw)
             center = (real(index, real64) - 0.5_real64) * width
             g0_value = g0(index) / real(frames_processed, real64)
             grank_value = grank(index) / real(frames_processed, real64)
             conditional = 0.0_real64
             if (abs(g0_value) > tiny(1.0_real64)) conditional = grank_value / g0_value
-            write(unit_number, '(F0.8,",",I0,4(",",ES24.16E3))') center, raw(index), &
-                raw_sum(index), g0_value, grank_value, conditional
+            if (all_ranks) then
+                g1_value = g1(index) / real(frames_processed, real64)
+                g2_value = g2(index) / real(frames_processed, real64)
+                c1_value = 0.0_real64
+                c2_value = 0.0_real64
+                if (abs(g0_value) > tiny(1.0_real64)) then
+                    c1_value = g1_value / g0_value
+                    c2_value = g2_value / g0_value
+                end if
+                write(unit_number, '(F0.8,",",I0,7(",",ES24.16E3))') center, raw(index), &
+                    raw_p1(index), raw_p2(index), g0_value, g1_value, g2_value, &
+                    c1_value, c2_value
+            else
+                write(unit_number, '(F0.8,",",I0,4(",",ES24.16E3))') center, raw(index), &
+                    raw_sum(index), g0_value, grank_value, conditional
+            end if
         end do
         close(unit_number)
     end subroutine write_one_dimensional_csv
@@ -450,7 +555,11 @@ contains
         open(newunit=metadata_unit, file=trim(metadata_path), status='replace', &
             action='write', iostat=ios)
         if (ios /= 0) call fatal('cannot create metadata YAML')
-        write(metadata_unit, '(A)') 'format: nematics-corr-v1'
+        if (all_ranks) then
+            write(metadata_unit, '(A)') 'format: nematics-corr-v2'
+        else
+            write(metadata_unit, '(A)') 'format: nematics-corr-v1'
+        end if
         write(metadata_unit, '(A)') 'system:'
         write(metadata_unit, '(A,A,A)') "  molecule: '", trim(molecule_name), "'"
         write(metadata_unit, '(A,A,A)') "  dataset: '", trim(dataset_name), "'"
@@ -472,7 +581,11 @@ contains
         write(metadata_unit, '(A)') '  pbc: selected_atoms_reconstructed_relative_to_first'
         write(metadata_unit, '(A)') '  units: nm'
         write(metadata_unit, '(A)') 'calculation:'
-        write(metadata_unit, '(A,I0)') '  rank: ', correlation_rank
+        if (all_ranks) then
+            write(metadata_unit, '(A)') '  ranks: [0, 1, 2]'
+        else
+            write(metadata_unit, '(A,I0)') '  rank: ', correlation_rank
+        end if
         write(metadata_unit, '(A,I0)') '  frames: ', frames_processed
         write(metadata_unit, '(A,I0)') '  molecules_per_frame: ', molecules
         write(metadata_unit, '(A)') '  periodic_images: 27'

@@ -67,6 +67,8 @@ def configure_axis(ax: plt.Axes, temperature_k: float, maximum: float) -> None:
 
 def definition(system: str, name: str) -> str:
     if system == "5CB":
+        if name == "first-chain":
+            return "10–15–16–17; central bond 15–16"
         return "8–10–15–16; central bond 10–15"
     if name == "ether":
         return "16–15–28–11; central bond 15–28"
@@ -74,7 +76,11 @@ def definition(system: str, name: str) -> str:
 
 
 def display_name(name: str) -> str:
-    return "Ether" if name == "ether" else "Ring-junction"
+    if name == "ether":
+        return "Ether"
+    if name == "first-chain":
+        return "First-chain"
+    return "Ring-junction"
 
 
 def plot_all_temperatures(
@@ -234,7 +240,7 @@ def main() -> int:
         "--output-dir",
         type=Path,
         default=Path("reports/4ocb_dihedral_pmfs"),
-        help="Directory for the five PNG files",
+        help="Directory for the six PNG files",
     )
     parser.add_argument(
         "--5cb-root",
@@ -247,22 +253,25 @@ def main() -> int:
     curves_4ocb_ether = collect_curves(args.root, "ether")
     curves_4ocb_junction = collect_curves(args.root, "ring-junction")
     curves_5cb_junction = collect_curves(args.__dict__["5cb_root"], "ring-junction")
+    curves_5cb_first_chain = collect_curves(args.__dict__["5cb_root"], "first-chain")
     outputs = (
         args.output_dir / "4ocb_ether_pmf_all_temperatures.png",
         args.output_dir / "4ocb_ring_junction_pmf_all_temperatures.png",
         args.output_dir / "5cb_ring_junction_pmf_all_temperatures.png",
+        args.output_dir / "5cb_first_chain_pmf_all_temperatures.png",
         args.output_dir / "common_temperatures_4ocb_ether_vs_5cb_junction_pmf.png",
         args.output_dir / "common_temperatures_4ocb_ring_junction_vs_5cb_junction_pmf.png",
     )
     plot_all_temperatures(curves_4ocb_ether, "4OCB", "ether", outputs[0])
     plot_all_temperatures(curves_4ocb_junction, "4OCB", "ring-junction", outputs[1])
     plot_all_temperatures(curves_5cb_junction, "5CB", "ring-junction", outputs[2])
-    plot_common_temperatures(curves_4ocb_ether, curves_5cb_junction, "ether", outputs[3])
+    plot_all_temperatures(curves_5cb_first_chain, "5CB", "first-chain", outputs[3])
+    plot_common_temperatures(curves_4ocb_ether, curves_5cb_junction, "ether", outputs[4])
     plot_common_temperatures(
         curves_4ocb_junction,
         curves_5cb_junction,
         "ring-junction",
-        outputs[4],
+        outputs[5],
     )
     for output in outputs:
         print(f"Wrote {output}")

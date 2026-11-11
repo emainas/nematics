@@ -41,6 +41,7 @@ class CorrConfig:
     vector_path: Path | None
     position_atoms: tuple[int, ...]
     rank: int
+    all_ranks: bool
     cylinder_radii_nm: tuple[float, ...]
     axial_max_nm: float
     perpendicular_max_nm: float
@@ -123,9 +124,25 @@ def load_corr_config(path: str | Path) -> CorrConfig:
     if not director_path.is_file():
         raise FileNotFoundError(f"Director file does not exist: {director_path}")
 
-    rank = int(_required(analysis, "rank", "analysis"))
-    if rank not in {0, 1, 2}:
-        raise ValueError("analysis.rank must be 0, 1, or 2")
+    ranks_value = analysis.get("ranks")
+    if ranks_value is None:
+        rank = int(_required(analysis, "rank", "analysis"))
+        if rank not in {0, 1, 2}:
+            raise ValueError("analysis.rank must be 0, 1, or 2")
+        all_ranks = False
+    else:
+        if "rank" in analysis:
+            raise ValueError("analysis must contain either rank or ranks, not both")
+        if not isinstance(ranks_value, list):
+            raise ValueError("analysis.ranks must be the YAML list [0, 1, 2]")
+        try:
+            ranks = tuple(int(value) for value in ranks_value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("analysis.ranks must be the YAML list [0, 1, 2]") from exc
+        if ranks != (0, 1, 2):
+            raise ValueError("analysis.ranks currently supports exactly [0, 1, 2]")
+        rank = 2
+        all_ranks = True
     if int(analysis.get("periodic_images", 27)) != 27:
         raise ValueError("analysis.periodic_images must be 27 for Alekos-compatible corr")
     vector_value = inputs.get("vectors")
@@ -200,6 +217,7 @@ def load_corr_config(path: str | Path) -> CorrConfig:
         vector_path=vector_path,
         position_atoms=position_atoms,
         rank=rank,
+        all_ranks=all_ranks,
         cylinder_radii_nm=radii,
         axial_max_nm=_positive_float(analysis.get("axial_max_nm", 5.0), "analysis.axial_max_nm"),
         perpendicular_max_nm=_positive_float(
@@ -221,7 +239,10 @@ def load_corr_config(path: str | Path) -> CorrConfig:
         slurm_memory=_safe_slurm_value(slurm.get("memory", "1G"), "slurm.memory"),
         slurm_cpus_per_task=cpus,
         slurm_job_name=_safe_slurm_value(
-            slurm.get("job_name", f"corr{rank}-{system.get('molecule', 'system')}"),
+            slurm.get(
+                "job_name",
+                f"corr{'012' if all_ranks else rank}-{system.get('molecule', 'system')}",
+            ),
             "slurm.job_name",
         ),
         slurm_modules=tuple(modules_raw),
@@ -263,6 +284,7 @@ def _namelist_text(job: PreparedCorrJob) -> str:
             f"  frame_stop = {config.frame_stop}",
             f"  frame_stride = {config.frame_stride}",
             f"  correlation_rank = {config.rank}",
+            f"  all_ranks = {'.true.' if config.all_ranks else '.false.'}",
             f"  bins = {config.bins}",
             f"  radius_count = {len(config.cylinder_radii_nm)}",
             f"  cylinder_radii = {radii}",

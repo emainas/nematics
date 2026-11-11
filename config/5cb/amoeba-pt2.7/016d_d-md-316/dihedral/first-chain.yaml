@@ -1,0 +1,26 @@
+version: 1
+system:
+  molecule: 5cb
+  dataset: amoeba-pt2.7
+  run_id: 016d_d-md-316
+  temperature_k: 316
+trajectory:
+  path: /hickory/proj/cdpoonlab/users/emainas/tinker9-5cb-x1000-pt2.7/016d_d-md-316/5cb-x1000.arc
+  format: tinker_arc
+  molecules: 1000
+  atoms_per_molecule: 38
+frames:
+  start: 1
+  stop: 0
+  stride: 1
+dihedral:
+  name: first-chain
+  atoms: [10, 15, 16, 17]
+  pbc: autoimage
+  range: '0_360'
+cpptraj:
+  path: /proj/pierilab/software/amber/ambertools25/bin/cpptraj
+output:
+  path: data-processed/5cb/amoeba-pt2.7/016d_d-md-316/dihedral/first-chain/dihedral.dat
+  overwrite: false
+

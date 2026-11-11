@@ -95,3 +95,62 @@ def test_corr_rank_weights(tmp_path: Path, rank: int, expected_sum: float) -> No
     np.testing.assert_allclose(occupied["g_rank"] / occupied["g0"], expected_sum, atol=1e-12)
     assert metadata.is_file()
     assert performance.is_file()
+
+
+def test_corr_all_ranks_in_one_pass(tmp_path: Path) -> None:
+    compiler = shutil.which("gfortran")
+    if compiler is None:
+        pytest.skip("gfortran is not available")
+    repo = Path(__file__).resolve().parents[2]
+    executable = tmp_path / "corr"
+    subprocess.run(
+        [compiler, "-O2", "-std=f2008", str(repo / "src/nematics/_corr.f90"), "-o", str(executable)],
+        check=True,
+    )
+    trajectory, vectors, director = _write_inputs(tmp_path)
+    parallel = tmp_path / "parallel-all.csv"
+    perpendicular = tmp_path / "perpendicular-all.csv"
+    radial = tmp_path / "radial-all.csv"
+    metadata = tmp_path / "corr-all.yaml"
+    performance = tmp_path / "performance-all.csv"
+    namelist = tmp_path / "all-ranks.nml"
+    namelist.write_text(
+        "".join(
+            [
+                "&corr_job\n",
+                f"  trajectory_path = '{trajectory}'\n",
+                f"  director_path = '{director}'\n",
+                f"  vector_path = '{vectors}'\n",
+                f"  parallel_path = '{parallel}'\n",
+                f"  perpendicular_path = '{perpendicular}'\n",
+                f"  radial_path = '{radial}'\n",
+                f"  metadata_path = '{metadata}'\n",
+                f"  performance_path = '{performance}'\n",
+                "  molecules = 2\n",
+                "  atoms_per_molecule = 1\n",
+                "  correlation_rank = 2\n",
+                "  all_ranks = .true.\n",
+                "  bins = 10\n",
+                "  radius_count = 1\n",
+                "  cylinder_radii = 1.0\n",
+                "  position_atom_count = 1\n",
+                "  position_atoms = 1\n",
+                "  axial_max_nm = 1.0\n",
+                "  perpendicular_max_nm = 1.0\n",
+                "  radial_max_nm = 1.0\n",
+                "  slab_half_thickness_nm = 0.2\n",
+                "/\n",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    subprocess.run([str(executable), str(namelist)], check=True)
+
+    table = np.genfromtxt(parallel, delimiter=",", names=True)
+    occupied = table[table["raw_pair_count"] > 0]
+    assert occupied.size == 1
+    np.testing.assert_allclose(occupied["raw_p1_sum"], 0.0, atol=1e-12)
+    np.testing.assert_allclose(occupied["raw_p2_sum"], -0.5, atol=1e-12)
+    np.testing.assert_allclose(occupied["c1"], 0.0, atol=1e-12)
+    np.testing.assert_allclose(occupied["c2"], -0.5, atol=1e-12)
+    assert "ranks: [0, 1, 2]" in metadata.read_text(encoding="utf-8")
